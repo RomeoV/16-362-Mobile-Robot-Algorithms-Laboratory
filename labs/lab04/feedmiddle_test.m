@@ -1,14 +1,19 @@
+%% Setup workspace
 clear;
 close all
 robot = raspbot('hamilton');
 
 intialized = false;
 
-i_e_l = robot.encoders.LatestMessage.Vector.X
-i_e_r = robot.encoders.LatestMessage.Vector.Y
+%% Set initial variables
+i_e_l = robot.encoders.LatestMessage.Vector.X;
+i_e_r = robot.encoders.LatestMessage.Vector.Y;
 dist = 0;
 t = 0;
-target_dist = 1.2192;
+
+slippage = 1.01
+
+target_dist = 3/4*1.2192 * slippage;
 threshold = 0.001;
 
 prev_time = 0;
@@ -32,24 +37,26 @@ sdel = 0;
 
 myPlot = plot(t, error, 'b-');
 
-pref = []
-pact = []
-pdel = []
-pv = []
-pu = []
-pt = []
+pref = [];
+pact = [];
+pdel = [];
+pv = [];
+pu = [];
+pt = [];
 
 pid = 1;
 
-wh_offset = 0.98;
+wh_offset = 0.978;
 
 vmax = 0.25;
 amax = 0.25;
-tf = (target_dist + (vmax^2/amax))/vmax
+tf = (target_dist + (vmax^2/amax))/vmax;
 
-while abs(target_dist-dist)>threshold && t<8
+
+%% Move robot
+while abs(target_dist-dist)>threshold && t<10
     if ~intialized
-       myc = tic()
+       myc = tic();
        intialized = true;
        prev_time = toc(myc);
     end
@@ -75,12 +82,15 @@ while abs(target_dist-dist)>threshold && t<8
     
     upid = kp*error + kd*error_d + ki*error_i;
     
+    
     V = uref + pid*upid;
     
-    if abs(V)<0.3
-        robot.sendVelocity(V,V*wh_offset);
-    else
+    if abs(V)>0.3
         robot.sendVelocity(sign(V)*0.3,sign(V)*0.3*wh_offset);
+    elseif abs(V)<0.02
+        robot.sendVelocity(sign(V)*0.02,sign(V)*0.02*wh_offset);
+    else
+        robot.sendVelocity(V,V*wh_offset);
     end
     prev_time = t;
     prev_error = error;
@@ -94,37 +104,8 @@ while abs(target_dist-dist)>threshold && t<8
 end
 robot.stop();
 
-% while t<6
-%     if ~intialized
-%        myc = tic()
-%        intialized = true;
-%        prev_time = toc(myc);
-%     end
-%     t = toc(myc);
-%     l_e = robot.encoders.LatestMessage.Vector.X-i_e_l;
-%     r_e = robot.encoders.LatestMessage.Vector.Y-i_e_r;
-%     
-%     dt = t - prev_time;
-%     
-%     dist = ((l_e+r_e)/2);
-%     error = target_dist-dist;
-%     uref = trapezoidalVelocityProfile(t, 0.25, 0.25, 1, 1);
-%     sref = sref + uref*dt;
-%     
-%     udel = trapezoidalVelocityProfile(t-tdel, 0.25, 0.25, 1, 1);
-%     sdel = sdel+udel*dt;
-%     
-%     if abs(uref)<0.3
-%         robot.sendVelocity(uref,uref);
-%     else
-%         robot.sendVelocity(sign(uref)*0.3,sign(uref)*0.3);
-%     end
-%     prev_time = t;
-%     pref = [pref sref];
-%     pact = [pact dist];
-%     pdel = [pdel sdel];
-%     pt = [pt t];
-% end
+
+%% Plot figures
 plot(pt,pref);
 hold on
 plot(pt,pact);

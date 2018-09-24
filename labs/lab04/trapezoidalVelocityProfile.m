@@ -1,6 +1,6 @@
 function uref = trapezoidalVelocityProfile(t, amax, vmax, dist, sgn)
 tramp = vmax/amax;
-tf = (dist + (vmax^2/amax))/vmax
+tf = (dist + (vmax^2/amax))/vmax;
 
 if t<tramp
     uref = amax*t;
