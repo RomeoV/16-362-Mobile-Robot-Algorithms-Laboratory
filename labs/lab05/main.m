@@ -69,22 +69,19 @@ while toc() < max(trajectory.t_eval+robotModel.tdelay)
     t_data = [t_data current_time];
     
     % Controller
-    error_l = trajectory.x_at_time(current_time-robotModel.tdelay) - x_est;
-    error_r = trajectory.y_at_time(current_time-robotModel.tdelay) - y_est;
+    error_l = trajectory.wl_at_time(current_time-robotModel.tdelay) - encoder_l;
+    error_r = trajectory.wr_at_time(current_time-robotModel.tdelay) - encoder_r;
     error_rel = [cos(theta_est) -sin(theta_est); sin(theta_est) cos(theta_est)]*[error_l;error_r];
     error_l_data = [error_l_data error_rel(1)];
     error_r_data = [error_r_data error_rel(2)];
 %     
 %     vl_fb = K_p*error_l;
 %     vr_fb = K_p*error_r;
-    V_control = 0.4*error_rel(1);
-    omega_control = 1.0*error_rel(2);
-    error_dist = error_l^2+error_r^2;
-    error_theta = trajectory.theta_at_time(current_time-robotModel.tdelay);
-    [vl_fb, vr_fb] = robotModel.VwTovlvr(V_control, omega_control);
-
-    vl_ffd = 0;
-    vr_ffd = 0;
+    vl_control = 0.4*error_l;
+    vr_control = 0.4*error_r;
+%     error_dist = error_l^2+error_r^2;
+%     error_theta = trajectory.theta_at_time(current_time-robotModel.tdelay);
+    [vl_fb, vr_fb] = robotModel.VwTovlvr(vl_control, vr_control);
     
     [vl_sat, vr_sat] = robotModel.limitWheelVelocities([vl_ffd+vl_fb; vr_ffd+vr_fb]);
     
