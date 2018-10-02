@@ -1,0 +1,33 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+ParametrizeABC2Rth	matlab_api/utils/ParametrizeABC2Rth.m	/^function line_rth = ParametrizeABC2Rth(line_abc)$/;"	f
+ParametrizePts2ABC	matlab_api/utils/ParametrizePts2ABC.m	/^function params = ParametrizePts2ABC(p1,p2)$/;"	f
+ParametrizePts2MC	matlab_api/utils/ParametrizePts2MC.m	/^function [m,c] = ParametrizePts2MC(p1,p2)$/;"	f
+_DEFINITION	matlab_api/custom_robot_msgs/matlab_gen/build/rosjava_build/audio_receiver/build/generated-src/audio_receiver/audioFile.java	/^  static final java.lang.String _DEFINITION = "string file_name\\r\\nint16[] file_data\\r\\n";$/;"	f	interface:audioFile
+_IS_ACTION	matlab_api/custom_robot_msgs/matlab_gen/build/rosjava_build/audio_receiver/build/generated-src/audio_receiver/audioFile.java	/^  static final boolean _IS_ACTION = false;$/;"	f	interface:audioFile
+_IS_SERVICE	matlab_api/custom_robot_msgs/matlab_gen/build/rosjava_build/audio_receiver/build/generated-src/audio_receiver/audioFile.java	/^  static final boolean _IS_SERVICE = false;$/;"	f	interface:audioFile
+_TYPE	matlab_api/custom_robot_msgs/matlab_gen/build/rosjava_build/audio_receiver/build/generated-src/audio_receiver/audioFile.java	/^  static final java.lang.String _TYPE = "audio_receiver\/audioFile";$/;"	f	interface:audioFile
+atanLine2D	matlab_api/utils/atanLine2D.m	/^function theta = atanLine2D(a,b)$/;"	f
+audioFile	matlab_api/custom_robot_msgs/matlab_gen/build/rosjava_build/audio_receiver/build/generated-src/audio_receiver/audioFile.java	/^public interface audioFile extends org.ros.internal.message.Message {$/;"	i
+audio_receiver	matlab_api/custom_robot_msgs/matlab_gen/build/rosjava_build/audio_receiver/build/generated-src/audio_receiver/audioFile.java	/^package audio_receiver;$/;"	p
+calculate_circle	labs/lab02/calculate_circle.m	/^function [cx,cy,R] = calculate_circle(x,y)$/;"	f
+d_travelled	labs/lab04/PID_step_control_simulation.m	/^function d = d_travelled(robot, d_avg_initial)$/;"	f
+encoderEventListenerExample	matlab_api/examples/Listener Examples/encoderEventListenerExample.m	/^function encoderEventListenerExample(handle,event)$/;"	f
+find_min_distance_averaged	labs/lab02/find_min_distance_averaged.m	/^function [x,y] = find_min_distance_averaged(robot)$/;"	f
+find_min_distance_one_shot	labs/lab02/find_min_distance_one_shot.m	/^function [x,y,min_r,min_theta] = find_min_distance_one_shot(robot)$/;"	f
+getFileData	matlab_api/custom_robot_msgs/matlab_gen/build/rosjava_build/audio_receiver/build/generated-src/audio_receiver/audioFile.java	/^  short[] getFileData();$/;"	m	interface:audioFile
+getFileName	matlab_api/custom_robot_msgs/matlab_gen/build/rosjava_build/audio_receiver/build/generated-src/audio_receiver/audioFile.java	/^  java.lang.String getFileName();$/;"	m	interface:audioFile
+keyboardEventListenerExample	matlab_api/examples/Listener Examples/keyboardEventListenerExample.m	/^function keyboardEventListenerExample(~,event)$/;"	f
+lab1	labs/lab01/lab1.m	/^function lab1$/;"	f
+laserEventListenerExample	matlab_api/examples/Listener Examples/laserEventListenerExample.m	/^function laserEventListenerExample(handle,event)$/;"	f
+move_xcm_straight	labs/lab01/lab1.m	/^function move_xcm_straight(robot,target_dist,dist,prev_encoderX,max_speed)$/;"	f
+peekRangeImageExample	matlab_api/examples/Listener Examples/peekRangeImageExample.m	/^function res = peekRangeImageExample()$/;"	f
+pollKeyboardExample	matlab_api/examples/Listener Examples/pollKeyboardExample.m	/^function res = pollKeyboardExample()$/;"	f
+setFileData	matlab_api/custom_robot_msgs/matlab_gen/build/rosjava_build/audio_receiver/build/generated-src/audio_receiver/audioFile.java	/^  void setFileData(short[] value);$/;"	m	interface:audioFile
+setFileName	matlab_api/custom_robot_msgs/matlab_gen/build/rosjava_build/audio_receiver/build/generated-src/audio_receiver/audioFile.java	/^  void setFileName(java.lang.String value);$/;"	m	interface:audioFile
+trapezoidalVelocityProfile	labs/lab04/trapezoidalVelocityProfile.m	/^function uref = trapezoidalVelocityProfile(t, amax, vmax, dist, sgn)$/;"	f
+u_ramp	labs/lab04/romeo.m	/^function u_ref = u_ramp(t, final_distance)$/;"	f

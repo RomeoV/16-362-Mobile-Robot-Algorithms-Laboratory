@@ -13,7 +13,7 @@ t = 0;
 
 slippage = 1.01
 
-target_dist = 3/4*1.2192 * slippage;
+target_dist = 1 * slippage;
 threshold = 0.001;
 
 prev_time = 0;
@@ -23,8 +23,8 @@ error_d = 0;
 prev_error = 0;
 error_i = 0;
 
-kp = 0.2;
-kd = 0.001;
+kp = 0.3;
+kd = 0.002;
 ki = 0.1;
 
 sref = 0;
@@ -46,7 +46,7 @@ pt = [];
 
 pid = 1;
 
-wh_offset = 0.978;
+wh_offset = 0.98;
 
 vmax = 0.25;
 amax = 0.25;
@@ -54,7 +54,7 @@ tf = (target_dist + (vmax^2/amax))/vmax;
 
 
 %% Move robot
-while abs(target_dist-dist)>threshold && t<10
+while abs(target_dist-dist)>threshold && t<tf+1
     if ~intialized
        myc = tic();
        intialized = true;
@@ -98,8 +98,7 @@ while abs(target_dist-dist)>threshold && t<10
     pref = [pref sref];
     pact = [pact dist];
     pdel = [pdel sdel];
-    pv = [pv V];
-    pu = [pu uref];
+    pv = [pv error];
     pt = [pt t];
 end
 robot.stop();
@@ -112,11 +111,16 @@ plot(pt,pact);
 hold on
 plot(pt,pdel);
 legend("pref","pact","pdel")
+xlabel('time')
+ylabel('displacement')
+
 figure
 plot(pt,pv);
-hold on
-plot(pt,pu);
-legend("pv","pu")
+xlabel('time')
+ylabel('error')
+% hold on
+% plot(pt,pu);
+% legend("pv","pu")
 disp(mean(pref-pact))
 robot.stop();
 robot.shutdown();

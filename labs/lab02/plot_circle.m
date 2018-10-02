@@ -1,5 +1,5 @@
 close all;
-[object_x,object_y] = find_min_distance(robot);
+[object_x,object_y] = find_min_distance_one_shot(robot);
 [circle_x,circle_y,circle_R] = calculate_circle(object_x,object_y);
 
 figure
