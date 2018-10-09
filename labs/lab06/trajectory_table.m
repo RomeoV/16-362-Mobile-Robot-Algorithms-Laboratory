@@ -155,4 +155,3 @@ classdef trajectory_table < handle
         end
     end
 end
-
