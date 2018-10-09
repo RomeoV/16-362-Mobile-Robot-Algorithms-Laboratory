@@ -233,18 +233,18 @@ classdef cubicSpiralTrajectory < handle
                 ss = -ss;
             end
             curve = cubicSpiralTrajectory([as bs ss],201);
-            plot(curve.poseArray(1,:),curve.poseArray(2,:));
-            hold on
-            px = 0.8*x:x/100:1.2*x;
-            plot(px,tan(th)*px + (curve.poseArray(2,end)-curve.poseArray(1,end)*tan(th)))
-            hold on
-            plot(px,tan(curve.poseArray(3,end))*px + (curve.poseArray(2,end)-curve.poseArray(1,end)*tan(curve.poseArray(3,end))))
-            hold on
-            scatter(x,y)
-            text(x,y,{x + " : " + y + " : " + th},'HorizontalAlignment','right')
-            hold on
-            scatter(curve.poseArray(1,end),curve.poseArray(2,end));
-            text(curve.poseArray(1,end),curve.poseArray(2,end),{curve.poseArray(1,end) + " : " + curve.poseArray(2,end) + " : " + curve.poseArray(3,end)},'HorizontalAlignment','left')
+%             plot(curve.poseArray(1,:),curve.poseArray(2,:));
+%             hold on
+%             px = 0.8*x:x/100:1.2*x;
+%             plot(px,tan(th)*px + (curve.poseArray(2,end)-curve.poseArray(1,end)*tan(th)))
+%             hold on
+%             plot(px,tan(curve.poseArray(3,end))*px + (curve.poseArray(2,end)-curve.poseArray(1,end)*tan(curve.poseArray(3,end))))
+%             hold on
+%             scatter(x,y)
+%             text(x,y,{x + " : " + y + " : " + th},'HorizontalAlignment','right')
+%             hold on
+%             scatter(curve.poseArray(1,end),curve.poseArray(2,end));
+%             text(curve.poseArray(1,end),curve.poseArray(2,end),{curve.poseArray(1,end) + " : " + curve.poseArray(2,end) + " : " + curve.poseArray(3,end)},'HorizontalAlignment','left')
         end
             
     end
