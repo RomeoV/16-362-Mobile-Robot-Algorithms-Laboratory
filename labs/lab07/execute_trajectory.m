@@ -14,7 +14,10 @@ while toc() < max(trajectory.t_eval+robotModel.tdelay)
 
   est_robot.updateEstimation(current_time,encoder_l,encoder_r);
   
-  pose_ref_in_rf = ref_robot.getReferencePoseAtTime(current_time-robotModel.tdelay);
+  %pose_ref_in_rf = ref_robot.getReferencePoseAtTime(current_time-robotModel.tdelay);
+  pose_ref_in_rf = pose(trajectory.x_at_time(current_time-robotModel.tdelay),...
+      trajectory.y_at_time(current_time-robotModel.tdelay),...
+      trajectory.theta_at_time(current_time-robotModel.tdelay));
   pose_ref_in_wf = pose(pose.matToPoseVec(robot_frame.bToA()*pose_ref_in_rf.bToA()));
   pose_est = est_robot.getPose();
   vl_ffd = trajectory.vl_at_time(current_time-robotModel.tdelay);

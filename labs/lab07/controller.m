@@ -10,7 +10,7 @@ methods(Static = true)
 
     error_x = pose_ref.x() - pose_est.x();
     error_y = pose_ref.y() - pose_est.y();
-    error_th = rem(pose_ref.th() - pose_est.th(),2*pi);
+    error_th = pose_ref.th() - pose_est.th();
     
     log_data.log_errors(error_x, error_y, error_th);
 

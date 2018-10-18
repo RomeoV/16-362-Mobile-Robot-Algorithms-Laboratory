@@ -23,11 +23,11 @@ ref_robot = refRobot(trajectory);
 
 current_time = 0;
 
-goal_pose = (pose(0.3048,0.3048,0));
+goal_pose = (pose(2*0.3048,2*0.3048,0));
 goSomewhere
-goal_pose = (pose(-0.6096,-0.6096,-pi/2));
+goal_pose = (pose(2*-0.6096,2*-0.6096,-pi/2));
 goSomewhere
-goal_pose = (pose(-0.3048,0.3048,pi/2));
+goal_pose = (pose(2*-0.3048,2*0.3048,pi/2));
 goSomewhere
 
 
