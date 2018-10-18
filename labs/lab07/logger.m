@@ -11,11 +11,12 @@ classdef logger < handle
     error_theta_data
     x_data
     y_data
+    theta_data
     logging
   end
 
   methods(Access = public)
-    function log_data(obj, x_est, y_est, theta_est, encoder_l, encoder_r, time, x_ref, y_ref)
+    function log_data(obj, x_est, y_est, theta_est, encoder_l, encoder_r, time, x_ref, y_ref, theta_data)
       if(obj.logging)    
         obj.x_est_data = [obj.x_est_data x_est];
         obj.y_est_data = [obj.y_est_data y_est];
@@ -25,6 +26,7 @@ classdef logger < handle
         obj.t_data = [obj.t_data time];
         obj.x_data = [obj.x_data x_ref];
         obj.y_data = [obj.y_data y_ref];
+        obj.theta_data = [obj.theta_data theta_data];
       end
     end
     function log_errors(obj,err_x, err_y, err_theta)

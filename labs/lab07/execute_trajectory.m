@@ -22,7 +22,7 @@ while toc() < max(trajectory.t_eval+robotModel.tdelay)
   [vl_control, vr_control] = controller.getControlInput(pose_ref_in_wf, pose_est,...
       vl_ffd, vr_ffd,...
       trajectory.V_at_time(current_time-robotModel.tdelay),log_data);
-    log_data.log_data(pose_est.x(), pose_est.y(), pose_est.th(), encoder_l, encoder_r, current_time, pose_ref_in_wf.x(), pose_ref_in_wf.y());
+    log_data.log_data(pose_est.x(), pose_est.y(), pose_est.th(), encoder_l, encoder_r, current_time, pose_ref_in_wf.x(), pose_ref_in_wf.y(), pose_ref_in_wf.th());
   
       % Send control to plant
     if isnan(vl_control) || isnan(vr_control)
@@ -31,5 +31,7 @@ while toc() < max(trajectory.t_eval+robotModel.tdelay)
         robot.sendVelocity(vl_control, vr_control); 
     end
   
+  plot_graphs
+  drawnow();
   pause(0.005);
 end

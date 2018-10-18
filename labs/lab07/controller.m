@@ -10,8 +10,8 @@ methods(Static = true)
 
     error_x = pose_ref.x() - pose_est.x();
     error_y = pose_ref.y() - pose_est.y();
-    error_th = pose_ref.th() - pose_est.th();
-
+    error_th = rem(pose_ref.th() - pose_est.th(),2*pi);
+    
     log_data.log_errors(error_x, error_y, error_th);
 
     error_rel = [cos(pose_est.th()) sin(pose_est.th()); -sin(pose_est.th()) cos(pose_est.th())]*[error_x;error_y];
