@@ -77,7 +77,7 @@ classdef robotTrajectory < handle
             obj.omega_eval = curve.wArray;
             obj.x_eval = curve.poseArray(1,:);
             obj.y_eval = curve.poseArray(2,:);
-            obj.theta_eval = curve.poseArray(3,:);
+            obj.theta_eval = unwrap(curve.poseArray(3,:));
             obj.vl_eval = curve.vlArray;
             obj.vr_eval = curve.vrArray;
             obj.dt = obj.t_eval(end)/size(obj.t_eval,2)

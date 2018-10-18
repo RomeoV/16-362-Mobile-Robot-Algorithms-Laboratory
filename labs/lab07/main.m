@@ -23,12 +23,12 @@ ref_robot = refRobot(trajectory);
 
 current_time = 0;
 
-goal_pose = (pose(2*0.3048,2*0.3048,0));
-goSomewhere
-goal_pose = (pose(2*-0.6096,2*-0.6096,-pi/2));
-goSomewhere
-goal_pose = (pose(2*-0.3048,2*0.3048,pi/2));
-goSomewhere
+goals = [0, 0.3048,-0.6096,-0.3048;0, 0.3048,-0.6096,0.3048;0, 0,-pi/2,pi/2]
+robot_frame = pose(goals(:,1)')
+for i = 2:size(goals,2)
+    goal_pose = pose(goals(:,i)') %local
+    goSomewhere
+end
 
 
 % robot_frame = est_robot.getPose();

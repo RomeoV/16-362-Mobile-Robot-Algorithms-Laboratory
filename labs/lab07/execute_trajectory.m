@@ -1,6 +1,6 @@
 tic();
 firstIter = true;
-while toc() < max(trajectory.t_eval+robotModel.tdelay)
+while toc() < max(trajectory.t_eval+2*robotModel.tdelay)
   if firstIter
       tic();
       firstIter = false;
@@ -38,3 +38,4 @@ while toc() < max(trajectory.t_eval+robotModel.tdelay)
   drawnow();
   pause(0.005);
 end
+robot_frame = pose(pose.matToPoseVec(robot_frame.bToA()*goal_pose.bToA()));
