@@ -9,8 +9,8 @@ pause(2.5);
 logging = false;
 offset = -5;
 
-lidar_x = [0];
-lidar_y = [0];
+lidar_x = [];
+lidar_y = [];
 
 world = scatter(lidar_x,lidar_y);
 xlim([-1 1])
@@ -20,7 +20,7 @@ sails = [];
 
 tic()
 firstIter = true;
-while toc() < 5
+while size(sails,2) < 3
   if firstIter
       tic();
       firstIter = false;
@@ -102,6 +102,6 @@ while toc() < 5
   end
   pause(0.05)
 end
-disp(sails(1:3,:))
+%disp(sails(1:3,:))
 robot.stopLaser();
 robot.shutdown();
