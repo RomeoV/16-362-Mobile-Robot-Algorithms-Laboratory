@@ -80,7 +80,7 @@ classdef robotTrajectory < handle
             obj.theta_eval = unwrap(curve.poseArray(3,:));
             obj.vl_eval = curve.vlArray;
             obj.vr_eval = curve.vrArray;
-            obj.dt = obj.t_eval(end)/size(obj.t_eval,2)
+            obj.dt = obj.t_eval(end)/size(obj.t_eval,2);
             
             %obj.generateInterpolators()
             obj.padSequences(0.5);

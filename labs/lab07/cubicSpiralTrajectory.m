@@ -117,7 +117,7 @@ classdef cubicSpiralTrajectory < handle
                         n = 0;
                         elapsedTime = toc(startTic);
                         fprintf('Took %f minutes\n',elapsedTime/60.0);
-                    end;
+                    end
                     n = n + 1;
                     % Store coefficients.
                     r1Now = r1Tab.get(q,t);
@@ -191,7 +191,7 @@ classdef cubicSpiralTrajectory < handle
             end
             if(isinf(a2) || isinf(b2))
                 twoBad = true;
-            end;
+            end
 
             % Pick sole good one or the least curvy
             % I tried with and without this and it makes a huge difference! 
@@ -272,7 +272,7 @@ classdef cubicSpiralTrajectory < handle
             b = obj.parms(2);
             sf = obj.parms(3);
             ds = sf/(obj.numSamples-1);
-            k = @(s) s*(a+b*s)*(s-sf)
+            k = @(s) s*(a+b*s)*(s-sf);
             for i=1:obj.numSamples-1
                 % fill this i
                 obj.distArray(i+1) = obj.distArray(i)+ds;

@@ -7,9 +7,9 @@ classdef robotModel < handle
   % routines are referenced from the class name as well.
 
   properties(Constant)
-    W = 9.25/100; % wheel tread in m
-    W2 = 9.25/2/100; %1/2 wheel tread in m
-    maxWheelVelocity = 0.3; % max of either wheel in m/sec
+    W = 8.95/100; % wheel tread in m
+    W2 = 8.95/2/100; %1/2 wheel tread in m
+    maxWheelVelocity = 0.2; % max of either wheel in m/sec
 
     rad = .165; % robot body radius id 12.75/2 inches
     frontOffset = 6*0.0254; % front surface is 6 in in fwd of axle center

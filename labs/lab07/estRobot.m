@@ -1,27 +1,34 @@
 classdef estRobot < handle
 properties
-  timestamp_prev
   encoder_l_prev
   encoder_r_prev
   x_est
   y_est
   theta_est
+  dtime
 end
 
 methods
   function obj = estRobot(l_initial, r_initial)
     obj.encoder_l_prev = l_initial;
     obj.encoder_r_prev = r_initial;
-    obj.timestamp_prev = 0;
+    obj.dtime = 0;
     obj.x_est = 0;
     obj.y_est = 0;
     obj.theta_est = 0;
   end
 
-  function updateEstimation(obj,timestamp, encoder_l, encoder_r)
-    dt = timestamp - obj.timestamp_prev; obj.timestamp_prev = timestamp;
-    vl_est = (encoder_l-obj.encoder_l_prev)/dt;
-    vr_est = (encoder_r-obj.encoder_r_prev)/dt;
+  function updateEstimation(obj,d_tstamp, encoder_l, encoder_r)
+    dt = d_tstamp;
+    obj.dtime = dt;
+    if dt <= 0
+        vl_est = 0;
+        vr_est = 0;
+    elseif dt > 0
+        vl_est = (encoder_l-obj.encoder_l_prev)/dt;
+        vr_est = (encoder_r-obj.encoder_r_prev)/dt;
+    end
+    
     obj.encoder_l_prev = encoder_l; obj.encoder_r_prev = encoder_r;
 
     [V_est, omega_est] = robotModel.vlvrToVw(vl_est, vr_est);
