@@ -118,7 +118,7 @@ execute_trajectory
 % 
 % execute_trajectory
 
-    
+
 
 robot.sendVelocity(0.1,0.1);
 %%

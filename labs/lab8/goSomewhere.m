@@ -1,0 +1,9 @@
+
+% translate goal pose to robot frame
+goal_pose_in_rf = pose(pose.matToPoseVec(robot_frame.bToA()*goal_pose.bToA()));
+trajectory.generateTraj(goal_pose.x(),...
+                        goal_pose.y(),...
+                        goal_pose.th(),...
+                        1,0.2);
+               
+execute_trajectory
