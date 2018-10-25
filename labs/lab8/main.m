@@ -6,7 +6,7 @@ trajectory = robotTrajectory();
 log_data = logger();
 log_data.logging = true;
 real_time_plotting = false;
-pallet_d = -0.2;
+pallet_d = -0.3;
 if(real_time_plotting)
     subplot(1,3,1);
     hold on;
@@ -63,7 +63,9 @@ robot_frame = pose(goals(:,1)');
 
 goal_pose = pose(sail(:,1)'); %local
 
-fork_pose = pose(-0.1,0,0);
+final_pose = goal_pose;
+
+fork_pose = pose(-0.12,0,0);
     
 goal_pose_in_rf = pose(pose.matToPoseVec(robot_frame.bToA()*goal_pose.bToA()));
 
@@ -76,39 +78,66 @@ trajectory.generateTraj(goal_pose.x(),...
 
 execute_trajectory
 
-%robot.sendVelocity(.15,.15);
+[cx, cy] = find_close_sails(robot);
+disp(cx + " : " + cy);
 
-%% do it again
-% sails = find_sails(robot, true);
-% sails = sails(1:3,:);
-% sails(3,:) = deg2rad(sails(3,:));
-% 
-% disp(sails(3,:))
-% 
-% idx_min = NaN;
-% min_dist = inf;
-% for i = 1:size(sails,2)
-%     if norm(sails(1:2,i)) < min_dist
-%         min_dist = norm(sails(1:2,i));
-%         idx_min = i;
-%     end
-% end
-% sail = sails(:,idx_min);
-% 
-% if (sail(2) < 0 && sail(3) > 0) || (sail(2) > 0 && sail(3) < 0)
-%     sail(2) = -1*sail(2);
-% end
-% 
-% %disp(sail(:))
-% 
-% goals = ...
-%    [0, 0.3048,-0.6096,-0.3048;
-%     0, 0.3048,-0.6096,0.3048;
-%     0, 0,-pi/2,pi/2];
-% robot_frame = pose(goals(:,1)');
-% 
-% goal_pose = pose(sail(:,1)'); %local
-%     
+th_goal = atan2(cy,cx);
+th_goal = deg2rad(th_goal);
+disp("th_goal: " + th_goal);
+
+th_i = est_robot.theta_est;
+th_robo = 0;
+tstamp = double(robot.encoders.LatestMessage.Header.Stamp.Sec)+double(robot.encoders.LatestMessage.Header.Stamp.Nsec)/1e9;
+
+robot.stop();
+
+if (abs(atan2(cy,cx)))>2
+    while rad2deg(abs(th_robo-th_goal)) > 2
+          error_th = th_goal-th_robo;
+
+          robot.sendVelocity(0.01*sign(error_th),-0.01*sign(error_th));
+
+          encoder_l = robot.encoders.LatestMessage.Vector.X;
+          encoder_r = robot.encoders.LatestMessage.Vector.Y;
+          th_robo = th_i-est_robot.theta_est;
+          last_tstamp = tstamp;
+          tstamp = double(robot.encoders.LatestMessage.Header.Stamp.Sec)+double(robot.encoders.LatestMessage.Header.Stamp.Nsec)/1e9;
+          d_tstamp = tstamp-last_tstamp;
+          %disp("Matlab dt: " + dt + " - Robot dt: " + d_tstamp)
+          %tstamp = current_time;
+          est_robot.updateEstimation(d_tstamp,encoder_l,encoder_r);
+          pause(0.05)
+    end
+    [cx, cy] = find_close_sails(robot);
+
+    th_goal = atan2(cy,cx);
+    th_goal = deg2rad(th_goal);
+    disp("final offset: " + th_goal)
+else
+    disp("We Good");
+end
+robot.stop();
+
+pause(0.05);
+
+tic()
+while toc()<1
+robot.sendVelocity(0.1,0.1);
+encoder_l = robot.encoders.LatestMessage.Vector.X;
+encoder_r = robot.encoders.LatestMessage.Vector.Y;
+th_robo = th_i-est_robot.theta_est;
+last_tstamp = tstamp;
+tstamp = double(robot.encoders.LatestMessage.Header.Stamp.Sec)+double(robot.encoders.LatestMessage.Header.Stamp.Nsec)/1e9;
+d_tstamp = tstamp-last_tstamp;
+%disp("Matlab dt: " + dt + " - Robot dt: " + d_tstamp)
+%tstamp = current_time;
+est_robot.updateEstimation(d_tstamp,encoder_l,encoder_r);
+pause(0.05);
+end
+robot.forksUp();
+pause(1);
+
+% goal_pose = pose(0,0,0);
 % goal_pose_in_rf = pose(pose.matToPoseVec(robot_frame.bToA()*goal_pose.bToA()));
 % 
 % trajectory.generateTraj(goal_pose.x(),...
@@ -117,16 +146,6 @@ execute_trajectory
 %                         1,0.2);
 % 
 % execute_trajectory
-
-    
-
-robot.sendVelocity(0.1,0.1);
-%%
-
-pause(3);
-robot.forksUp();
-pause(1);
-
-    
+robot.stop()
 robot.stopLaser();
 robot.shutdown();

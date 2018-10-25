@@ -2,11 +2,13 @@ function sails = find_sails(robot, close)
 
 if close
     min_r = 0.02;
+    max_r = 0.6;
 else
     min_r = 0.08;
+    max_r = 1.5;
 end
 
-offset = 0;
+offset = -2;
 
 lidar_x = [0];
 lidar_y = [0];
@@ -37,7 +39,7 @@ while toc() < 5 && found_sail<30
      th = th(close_pallet);
      r_values = r_values(close_pallet);
   end
-  goodones = r_values>min_r & r_values<1;
+  goodones = r_values>min_r & r_values<max_r;
   r_values = r_values(goodones);
   th = th(goodones);
   
@@ -73,6 +75,7 @@ while toc() < 5 && found_sail<30
             Inertia = [Ixx Ixy;Ixy Iyy] /(size(th,1));
             lambda = eig(Inertia); 
             lambda = real(sqrt(lambda)*1000.0);
+            %disp(min(lambda))
             if ~isempty(lambda) && min(lambda)<1.3 && min(lambda)>0
                 sail_th = rad2deg(atan2(2*Ixy,Iyy-Ixx)/2);
                 %disp(center_x + " : " + center_y + " : " + sail_th + " : " + r_values(i))
@@ -98,13 +101,13 @@ while toc() < 5 && found_sail<30
                     end
                     if new_point
                         if (sqrt(center_x^2 + center_y^2)>min_r)
-                            sails = horzcat(sails,[center_x;center_y;sail_th;1]); 
+                            sails = horzcat(sails,[Ixx/(size(th,1));Iyy/(size(th,1));sail_th;1]); 
                             found_sail = found_sail +1;
                         end
                     end
                 else
                     if (sqrt(center_x^2 + center_y^2)>0.113)
-                        sails = horzcat(sails,[center_x;center_y;sail_th;1]); 
+                        sails = horzcat(sails,[Ixx/(size(th,1));Iyy/(size(th,1));sail_th;1]); 
                         found_sail = found_sail +1;
                     end
                 end
