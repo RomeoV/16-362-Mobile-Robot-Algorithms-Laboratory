@@ -33,7 +33,6 @@ robot_frame = pose(goals(:,1)');
 for i = 2:size(goals,2)
     goal_pose = pose(goals(:,i)'); %local
     goSomewhere
-    pause()
 end
 
 

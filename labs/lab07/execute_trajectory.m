@@ -18,7 +18,7 @@ while toc() < max(trajectory.t_eval+2*robotModel.tdelay)
   last_tstamp = tstamp;
   tstamp = double(robot.encoders.LatestMessage.Header.Stamp.Sec)+double(robot.encoders.LatestMessage.Header.Stamp.Nsec)/1e9;
   d_tstamp = tstamp-last_tstamp;
-  disp("Matlab dt: " + dt + " - Robot dt: " + d_tstamp)
+  %disp("Matlab dt: " + dt + " - Robot dt: " + d_tstamp)
   %tstamp = current_time;
   
   est_robot.updateEstimation(d_tstamp,encoder_l,encoder_r);
