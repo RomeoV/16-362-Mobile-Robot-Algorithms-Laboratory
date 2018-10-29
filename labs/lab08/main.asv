@@ -34,15 +34,36 @@ current_time = 2;
 robot.startLaser()
 pause(2.5);
 
-find_closest_sail;
+sails = find_sails(robot, false);
+sails = sails(1:3,:);
+sails(3,:) = deg2rad(sails(3,:));
+
+idx_min = NaN;
+min_dist = inf;
+for i = 1:size(sails,2)
+    if norm(sails(1:2,i)) < min_dist
+        min_dist = norm(sails(1:2,i));
+        idx_min = i;
+    end
+end
+
+sail = sails(:,idx_min);
+
+if (sail(2) < 0 && sail(3) > 0) || (sail(2) > 0 && sail(3) < 0)
+    sail(2) = -1*sail(2);
+end
 
 disp(sail(:))
 
-robot_frame = pose([0 0 0]);
+goals = ...
+   [0, 0.3048,-0.6096,-0.3048;
+    0, 0.3048,-0.6096,0.3048;
+    0, 0,-pi/2,pi/2];
+robot_frame = pose(goals(:,1)');
 
 goal_pose = pose(sail(:,1)'); %local
 
-fork_pose = pose(-0.20,0,0);
+fork_pose = pose(-0.1,0,0);
     
 goal_pose_in_rf = pose(pose.matToPoseVec(robot_frame.bToA()*goal_pose.bToA()));
 
@@ -97,12 +118,7 @@ execute_trajectory
 % 
 % execute_trajectory
 
-    
-find_closest_sail
-disp("Turning " + rad2deg(sail(3)) + " degrees!");
-rotate_robot(robot,sail(3));
-robot.forksDown();
-pause(2);
+
 
 robot.sendVelocity(0.1,0.1);
 %%

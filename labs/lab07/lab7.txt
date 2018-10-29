@@ -1,0 +1,10 @@
+How to make Lab 7 Work:
+
+Check robot model properties
+
+Specifically the wheel base and time delay
+
+Check lidar offset if your using lidar.
+
+
+For robot 4 - Wheel base is about 8.5 cm.
