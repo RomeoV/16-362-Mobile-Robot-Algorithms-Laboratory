@@ -17,17 +17,39 @@ audio_receiver	matlab_api/custom_robot_msgs/matlab_gen/build/rosjava_build/audio
 calculate_circle	labs/lab02/calculate_circle.m	/^function [cx,cy,R] = calculate_circle(x,y)$/;"	f
 d_travelled	labs/lab04/PID_step_control_simulation.m	/^function d = d_travelled(robot, d_avg_initial)$/;"	f
 encoderEventListenerExample	matlab_api/examples/Listener Examples/encoderEventListenerExample.m	/^function encoderEventListenerExample(handle,event)$/;"	f
+executeTrajectory	labs/lab09/mrplSystem.m	/^function executeTrajectory(obj, trajectory)$/;"	f
+findClosestSail	labs/lab09/mrplSystem.m	/^function sail = findClosestSail(obj)$/;"	f
+findSails	labs/lab09/mrplSystem.m	/^function sails = findSails(obj, maxNumOfSails)$/;"	f
+find_close_sails	labs/lab08/find_close_sails.m	/^function [cx,cy] = find_close_sails(robot)$/;"	f
 find_min_distance_averaged	labs/lab02/find_min_distance_averaged.m	/^function [x,y] = find_min_distance_averaged(robot)$/;"	f
 find_min_distance_one_shot	labs/lab02/find_min_distance_one_shot.m	/^function [x,y,min_r,min_theta] = find_min_distance_one_shot(robot)$/;"	f
+find_sails	labs/lab08/find_sails.m	/^function sails = find_sails(robot, close)$/;"	f
 getFileData	matlab_api/custom_robot_msgs/matlab_gen/build/rosjava_build/audio_receiver/build/generated-src/audio_receiver/audioFile.java	/^  short[] getFileData();$/;"	m	interface:audioFile
 getFileName	matlab_api/custom_robot_msgs/matlab_gen/build/rosjava_build/audio_receiver/build/generated-src/audio_receiver/audioFile.java	/^  java.lang.String getFileName();$/;"	m	interface:audioFile
+getLatestRobotTime	labs/lab09/mrplSystem.m	/^function tstamp = getLatestRobotTime(obj)$/;"	f
+get_ca_ij	labs/lab08/get_ca_ij.m	/^function points = get_ca_ij(r_values,th,min,max)$/;"	f
+get_ca_ij	labs/lab09/get_ca_ij.m	/^function points = get_ca_ij(r_values,th,min,max)$/;"	f
+get_ca_val	labs/lab08/get_ca_val.m	/^function ca = get_ca_val(c_array, i, n)$/;"	f
 keyboardEventListenerExample	matlab_api/examples/Listener Examples/keyboardEventListenerExample.m	/^function keyboardEventListenerExample(~,event)$/;"	f
 lab1	labs/lab01/lab1.m	/^function lab1$/;"	f
 laserEventListenerExample	matlab_api/examples/Listener Examples/laserEventListenerExample.m	/^function laserEventListenerExample(handle,event)$/;"	f
+move_target_point_back	labs/lab08/move_target_point_back.m	/^function [x_moved,y_moved] = move_target_point_back(x_t, y_t, th_t, d)$/;"	f
 move_xcm_straight	labs/lab01/lab1.m	/^function move_xcm_straight(robot,target_dist,dist,prev_encoderX,max_speed)$/;"	f
+mrplSystem	labs/lab09/mrplSystem.m	/^function obj = mrplSystem()$/;"	f
+myatan	labs/lab07/myatan.m	/^function v=myatan(y,x)$/;"	f
 peekRangeImageExample	matlab_api/examples/Listener Examples/peekRangeImageExample.m	/^function res = peekRangeImageExample()$/;"	f
+pickupAngleReady	labs/lab08/pickupAngleReady.m	/^function  pickupAngleReady(epsilon, smallV)$/;"	f
+pickupAngleReady	labs/lab09/pickupAngleReady.m	/^function  pickupAngleReady(epsilon, smallV)$/;"	f
+pickupReady	labs/lab08/pickupReady.m	/^function pickupReady(distToMove, vMax, aMax)$/;"	f
+plotData	labs/lab09/mrplSystem.m	/^function plotData(obj)$/;"	f
 pollKeyboardExample	matlab_api/examples/Listener Examples/pollKeyboardExample.m	/^function res = pollKeyboardExample()$/;"	f
+rotateRobot	labs/lab09/mrplSystem.m	/^function rotateRobot(obj)$/;"	f
+rotate_robot	labs/lab08/rotate_robot.m	/^function rotate_robot(robot,th)$/;"	f
+safeDistToSail	labs/lab08/safeDistToSail.m	/^function goalPose = safeDistToSail(safeDist, sailPose)$/;"	f
 setFileData	matlab_api/custom_robot_msgs/matlab_gen/build/rosjava_build/audio_receiver/build/generated-src/audio_receiver/audioFile.java	/^  void setFileData(short[] value);$/;"	m	interface:audioFile
 setFileName	matlab_api/custom_robot_msgs/matlab_gen/build/rosjava_build/audio_receiver/build/generated-src/audio_receiver/audioFile.java	/^  void setFileName(java.lang.String value);$/;"	m	interface:audioFile
-trapezoidalVelocityProfile	labs/lab04/trapezoidalVelocityProfile.m	/^function uref = trapezoidalVelocityProfile(t, amax, vmax, dist, sgn)$/;"	f
+setupPlots	labs/lab09/mrplSystem.m	/^function setupPlots(obj)$/;"	f
+trapezoidalVelocityProfile	labs/lab04/trapezoidalVelocityProfile.m	/^function uref = trapezoidalVelocityProfile(t, amax, dist, sgn)$/;"	f
+trapezoidalVelocityProfile	labs/lab08/trapezoidalVelocityProfile.m	/^function uref = trapezoidalVelocityProfile(t, amax, dist, sgn)$/;"	f
+trapezoidalVelocityProfile	labs/lab09/trapezoidalVelocityProfile.m	/^function uref = trapezoidalVelocityProfile(t, amax, dist, sgn)$/;"	f
 u_ramp	labs/lab04/romeo.m	/^function u_ref = u_ramp(t, final_distance)$/;"	f

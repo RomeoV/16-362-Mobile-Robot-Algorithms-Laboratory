@@ -6,7 +6,6 @@ properties
     robot
     est_robot
     ref_robot
-    robot_frame
     data_logger
     real_time_plotting
 end
@@ -25,13 +24,12 @@ function obj = mrplSystem()
     obj.est_robot = estRobot(obj.robot.encoders.LatestMessage.Vector.X,...
              obj.robot.encoders.LatestMessage.Vector.Y);
     obj.ref_robot = refRobot(robotTrajectory());
-    obj.robot_frame = pose([0 0 0]);
 end
 
 
 function executeTrajectory(obj, trajectory)
-    %EXECUTETRAJECTORY Follows a riben robotTrajectory
-    % 
+    %EXECUTETRAJECTORY Follows a given robotTrajectory
+    % The robot trajectory needs to be in robot coordinates
     if obj.real_time_plotting
         figure(1);
         subplot(1,3,1)
@@ -101,10 +99,12 @@ function executeTrajectory(obj, trajectory)
 end % function executeTrajectory
 
 function tstamp = getLatestRobotTime(obj)
+    %GETLATESTROBOTTIME returns time as given by last robot message
     tstamp = double(obj.robot.encoders.LatestMessage.Header.Stamp.Sec)+double(obj.robot.encoders.LatestMessage.Header.Stamp.Nsec)/1e9;
 end
 
-function rotateRobot(obj)
+function rotateRobot(obj, th)
+    %ROTATEROBOT rotates the robot with given angle in rad
     L = abs(th)*robotModel.W2;
     t = linspace(0,4);
     omega = zeros(size(t));
@@ -128,6 +128,7 @@ function rotateRobot(obj)
 end
 
 function sail = findClosestSail(obj)
+    %FINDCLOSESTSAIL Returns closest sail as vector (x,y,th)
     sails = obj.findSails(1);
     if size(sails,2) > 0
         sails = sails(1:3,:);
@@ -153,6 +154,8 @@ function sail = findClosestSail(obj)
 end
 
 function sails = findSails(obj, maxNumOfSails)
+  %FINDSAILS tries to find sails for 5 seconds or until maxNumOfSails
+  %reached. Also has different cutofff distances (see code)
   close = true;
 if close
     min_r = 0.02;
@@ -258,6 +261,7 @@ end % end of while loop for finding sails
 end % end function findSails
 
 function setupPlots(obj)
+    %SETUPPLOTS Subplot setup for trajectory+sails, error_theta, error_x_y_th
     figure(1)
     subplot(1,3,1);
     hold off;
@@ -281,6 +285,7 @@ function setupPlots(obj)
 end
 
 function plotData(obj)
+    %SETUPPLOTS Subplot setup for trajectory+sails, error_theta, error_x_y_th
     figure(1);
     subplot(1,3,1)
     plot(obj.data_logger.x_est_data,obj.data_logger.y_est_data);
@@ -298,5 +303,5 @@ function plotData(obj)
     plot(obj.data_logger.error_theta_data); hold off;
 end % function plotData
 
-end % methods section
-end % class
+end % end of methods section
+end % end of mrpsSystem class
