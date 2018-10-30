@@ -59,11 +59,6 @@ while toc() < 5 && found_sail<30
             center_x = mean(x);
             center_y = mean(y);
             
-            if close
-               hold on;
-               scatter(-center_y,center_x)
-            end
-            
             x = x - center_x;
             y = y - center_y;
             
@@ -79,7 +74,6 @@ while toc() < 5 && found_sail<30
             if ~isempty(lambda) && min(lambda)<1.3 && min(lambda)>0
                 sail_th = rad2deg(atan2(2*Ixy,Iyy-Ixx)/2);
                 %disp(center_x + " : " + center_y + " : " + sail_th + " : " + r_values(i))
-                
                 %Check if near other points\
                 if size(sails,2)>0
                     new_point = true;
@@ -100,14 +94,14 @@ while toc() < 5 && found_sail<30
                         
                     end
                     if new_point
-                        if (sqrt(center_x^2 + center_y^2)>min_r)
-                            sails = horzcat(sails,[Ixx/(size(th,1));Iyy/(size(th,1));sail_th;1]); 
+                        if (sqrt((center_x)^2 +(center_y)^2)>min_r)
+                            sails = horzcat(sails,[center_x;center_y;sail_th;1]); 
                             found_sail = found_sail +1;
                         end
                     end
                 else
-                    if (sqrt(center_x^2 + center_y^2)>0.113)
-                        sails = horzcat(sails,[Ixx/(size(th,1));Iyy/(size(th,1));sail_th;1]); 
+                    if (sqrt((center_x)^2 +(center_y)^2)>min_r)
+                        sails = horzcat(sails,[center_x;center_y;sail_th;1]); 
                         found_sail = found_sail +1;
                     end
                 end
