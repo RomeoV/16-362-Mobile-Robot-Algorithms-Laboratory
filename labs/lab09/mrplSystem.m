@@ -1,6 +1,7 @@
 classdef mrplSystem
 %MRPLSYSTEM Management class containing all subsystems
 %   List of functions:
+%   - pickUpClosestSail
 %   - executeTrajectory
 %   - tstamp 
 %   - rotateRobot
@@ -31,19 +32,73 @@ function obj = mrplSystem()
     obj.est_robot = estRobot(obj.robot.encoders.LatestMessage.Vector.X,...
              obj.robot.encoders.LatestMessage.Vector.Y);
     obj.ref_robot = refRobot(robotTrajectory());
+    obj.robot.startLaser();
 end
 
+function pickUpClosestSail(obj)
+    %% Generate Trajectory to Sail
+    sail_in_rf = obj.findClosestSail();
+    fork_offset = pose(-0.20,0,0);
+    fork_goal_pose_in_robot_frame = pose(pose.matToPoseVec(...
+        pose(sail_in_rf).bToA()*fork_offset.bToA()));
+    trajectory = robotTrajectory();
+    trajectory.generateTraj(fork_goal_pose_in_robot_frame.x(),...
+        fork_goal_pose_in_robot_frame.y(),...
+        fork_goal_pose_in_robot_frame.th(),...
+        1,0.2);
+
+    %sys.plotTrajectory(trajectory);
+
+    obj.executeTrajectory(trajectory)
+
+    %% Correct Rotation
+    sail = pose(obj.findClosestSail());
+    while abs(sail.th()) > deg2rad(2)
+        sail_th = atan2(sail.y(),sail.x());
+        obj.rotateRobot(1*sail_th);
+        obj.robot.sendVelocity(0.02,0.02);
+        pause(1);
+        obj.robot.stop();
+        sail = pose(obj.findClosestSail());
+    end
+
+    %% Pick up the sail
+    obj.robot.forksDown();
+    pause(1);
+    obj.robot.sendVelocity(0.1,0.1);
+    pause(2.5);
+    obj.robot.stop();
+    obj.robot.forksUp();
+    %obj.rotateRobot(pi);
+end
+
+function plotTrajectory(obj, trajectory)
+    figure(1);
+    hold on;
+    %xlim([min(trajectory.x_eval), max(trajectory.x_eval)]);
+    %ylim([min(trajectory.y_eval), max(trajectory.y_eval)]);
+
+    N = max(size(trajectory.x_eval));
+    x_plt = zeros(1,N);
+    y_plt = zeros(1,N);
+    for p = 1:N
+        goal_pose_in_wf = pose(pose.matToPoseVec(...
+            obj.est_robot.getPose().bToA()*pose(trajectory.x_eval(p),trajectory.y_eval(p),0).bToA()));
+        x_plt(p) = goal_pose_in_wf.x();
+        y_plt(p) = goal_pose_in_wf.y();
+    end
+    hold on;
+    plot(x_plt,y_plt); hold off;
+end
 
 function executeTrajectory(obj, trajectory)
     %EXECUTETRAJECTORY Follows a given robotTrajectory
     % The robot trajectory needs to be in robot coordinates
     if obj.real_time_plotting
-        figure(1);
-        subplot(1,3,1)
-        xlim([min(trajectory.x_eval), max(trajectory.x_eval)]);
-        ylim([min(trajectory.y_eval), max(trajectory.y_eval)]);
+        obj.plotTrajectory(trajectory);
     end
     
+    initial_robot_frame = obj.est_robot.getPose();
     tic();
     firstIter = true;
     while toc() < max(trajectory.t_eval+2*robotModel.tdelay)
@@ -76,7 +131,7 @@ function executeTrajectory(obj, trajectory)
           trajectory.y_at_time(delayed_time),...
           trajectory.theta_at_time(delayed_time));
 
-      pose_ref_in_wf = pose(pose.matToPoseVec(obj.est_robot.getPose().bToA()*pose_ref_in_rf.bToA()));
+      pose_ref_in_wf = pose(pose.matToPoseVec(initial_robot_frame.bToA()*pose_ref_in_rf.bToA()));
 
       pose_est = obj.est_robot.getPose();
 
@@ -139,21 +194,24 @@ function sail = findClosestSail(obj)
     sails = obj.findSails(1);
     if size(sails,2) > 0
         sails = sails(1:3,:);
-        sails(3,:) = deg2rad(sails(3,:));
 
         [~,idx_min] = min(mean(sails(1:2,:)));
 
         sail = sails(:,idx_min);
 
         % turn so it's facing 'away'
-        if (sail(2) < 0 && sail(3) > 0) || (sail(2) > 0 && sail(3) < 0)
-            sail(2) = -1*sail(2);
-        end
+%         if (sail(2) < 0 && sail(3) > 0) || (sail(2) > 0 && sail(3) < 0)
+%             sail(3) = -1*sail(3);
+%         end
         
         if obj.real_time_plotting
+            sail_pose_in_rf = pose(sail);
+            sail_pose_in_wf = pose(pose.matToPoseVec(...
+                obj.est_robot.getPose().bToA()*sail_pose_in_rf.bToA()));
            figure(1)
-           subplot(1,3,1); hold on;
-           scatter(sail(1), sail(2),'rx'); hold off;
+           hold on;
+           quiver(sail_pose_in_wf.x(), sail_pose_in_wf.y(),...
+               -cos(sail_pose_in_wf.th()),-sin(sail_pose_in_wf.th()),0.05,'filled','-.xr','LineWidth',2); hold off;
         end
     else
         sail = [];
@@ -162,14 +220,16 @@ end
 
 function sails = findSails(obj, maxNumOfSails)
   %FINDSAILS tries to find sails for 5 seconds or until maxNumOfSails
-  %reached. Also has different cutofff distances (see code)
-  close = true;
+  %reached. Also has different cutofff distances (see code).
+  % Theta in rad
+  obj.robot.startLaser();
+  close = false;
 if close
     min_r = 0.02;
-    max_r = 0.6;
+    max_r = 0.5;
 else
     min_r = 0.08;
-    max_r = 1.5;
+    max_r = 0.8;
 end
 
 sails = [];
@@ -265,12 +325,14 @@ while toc() < 5 && found_sail<maxNumOfSails
   end % end of for-loop over range values
   pause(0.05)
 end % end of while loop for finding sails
+if size(sails,2) > 0
+    sails(3,:) = deg2rad(sails(3,:));
+end
 end % end function findSails
 
 function setupPlots(obj)
     %SETUPPLOTS Subplot setup for trajectory+sails, error_theta, error_x_y_th
     figure(1)
-    subplot(1,3,1);
     hold off;
     plot([0],[0]); hold on;
     scatter(0,0,'go'); hold off;
@@ -280,13 +342,14 @@ function setupPlots(obj)
     xlim([-1,1]);
     ylim([-1,1]);
     
-    subplot(1,3,2);
+    figure(2)
+    subplot(1,2,1);
     hold off;
     plot([0],[0]);
     xlabel('time');
     ylabel('theta error');
     
-    subplot(1,3,3);
+    subplot(1,2,2);
     hold off;
     plot([0],[0]);
     xlabel('time');
@@ -296,17 +359,18 @@ end
 function plotData(obj)
     %SETUPPLOTS Subplot setup for trajectory+sails, error_theta, error_x_y_th
     figure(1);
-    subplot(1,3,1)
+    hold on;
     plot(obj.data_logger.x_est_data,obj.data_logger.y_est_data);
     hold on
     plot(obj.data_logger.x_data,obj.data_logger.y_data,'--');
     hold off;
 
-    subplot(1,3,2)
+    figure(2);
+    subplot(1,2,1)
     plot(obj.data_logger.theta_est_data); hold on;
     plot(obj.data_logger.theta_data); hold off;
 
-    subplot(1,3,3)
+    subplot(1,2,2)
     plot(obj.data_logger.error_x_data); hold on;
     plot(obj.data_logger.error_y_data);
     plot(obj.data_logger.error_theta_data); hold off;

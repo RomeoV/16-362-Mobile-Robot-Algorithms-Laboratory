@@ -37,6 +37,27 @@ classdef robotTrajectory < handle
             %   Detailed explanation goes here
         end
         
+        function generateTraj(obj, x_, y_, th_, sign_, Vmax_)
+            %GENERATETRAJ Figure 8 based on coefficients for size and velocity
+            %   Note that nothing is delayed yet_at_time
+            
+            curve = cubicSpiralTrajectory.planTrajectory(x_,y_,th_,sign_);
+            curve.planVelocities(Vmax_);
+
+            obj.t_eval = curve.timeArray;
+            obj.V_eval = curve.VArray;
+            obj.omega_eval = curve.wArray;
+            obj.x_eval = curve.poseArray(1,:);
+            obj.y_eval = curve.poseArray(2,:);
+            obj.theta_eval = unwrap(curve.poseArray(3,:));
+            obj.vl_eval = curve.vlArray;
+            obj.vr_eval = curve.vrArray;
+            obj.dt = obj.t_eval(end)/size(obj.t_eval,2);
+            
+            %obj.generateInterpolators()
+            obj.padSequences(0.5);
+        end
+        
         function generateInterpolators(obj)
             obj.V_spline_coeffs = spline(obj.t_eval, obj.V_eval);
             obj.omega_spline_coeffs = spline(obj.t_eval, obj.omega_eval);
@@ -63,27 +84,6 @@ classdef robotTrajectory < handle
 
             
             obj.generateInterpolators();
-        end
-        
-        function generateTraj(obj, x_, y_, th_, sign_, Vmax_)
-            %GENERATEFIGURE8 Figure 8 based on coefficients for size and velocity
-            %   Note that nothing is delayed yet_at_time
-            
-            curve = cubicSpiralTrajectory.planTrajectory(x_,y_,th_,sign_);
-            curve.planVelocities(Vmax_);
-
-            obj.t_eval = curve.timeArray;
-            obj.V_eval = curve.VArray;
-            obj.omega_eval = curve.wArray;
-            obj.x_eval = curve.poseArray(1,:);
-            obj.y_eval = curve.poseArray(2,:);
-            obj.theta_eval = unwrap(curve.poseArray(3,:));
-            obj.vl_eval = curve.vlArray;
-            obj.vr_eval = curve.vrArray;
-            obj.dt = obj.t_eval(end)/size(obj.t_eval,2);
-            
-            %obj.generateInterpolators()
-            obj.padSequences(0.5);
         end
         
         function V_ = V_at_time(obj, t)
