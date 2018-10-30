@@ -1,6 +1,13 @@
 classdef mrplSystem
-%MRPLSYSTEM Summary of this class goes here
-%   Detailed explanation goes here
+%MRPLSYSTEM Management class containing all subsystems
+%   List of functions:
+%   - executeTrajectory
+%   - tstamp 
+%   - rotateRobot
+%   - findClosestSail
+%   - findSails
+%   - setupPlots
+%   - plotData
 
 properties
     robot
@@ -146,7 +153,7 @@ function sail = findClosestSail(obj)
         if obj.real_time_plotting
            figure(1)
            subplot(1,3,1); hold on;
-           scatter(sail(1), sail(2)); hold off;
+           scatter(sail(1), sail(2),'rx'); hold off;
         end
     else
         sail = [];
@@ -270,6 +277,8 @@ function setupPlots(obj)
     xlabel('x');
     ylabel('y');
     daspect([1 1 1]);
+    xlim([-1,1]);
+    ylim([-1,1]);
     
     subplot(1,3,2);
     hold off;
