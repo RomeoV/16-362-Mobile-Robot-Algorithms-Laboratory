@@ -1,12 +1,13 @@
 function sails = find_sails(robot, close)
 
-if close
-    min_r = 0.02;
-else
-    min_r = 0.08;
-end
+min_r = 0.02;
+% if close
+%     min_r = 0.02;
+% else
+%     min_r = 0.08;
+% end
 
-offset = 0;
+offset = -8;
 
 lidar_x = [0];
 lidar_y = [0];
