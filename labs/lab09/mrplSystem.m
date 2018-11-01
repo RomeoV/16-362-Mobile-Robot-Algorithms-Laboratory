@@ -37,8 +37,44 @@ end
 
 function pickUpClosestSail(obj)
     %% Generate Trajectory to Sail
-    sail_in_rf = obj.findClosestSail();
-    fork_offset = pose(-0.20,0,0);
+    sail_in_rf = obj.findClosestSail()
+    
+    pause()
+    
+    fork_offset = pose(-0.30,0,0);
+    fork_goal_pose_in_robot_frame = pose(pose.matToPoseVec(...
+        pose(sail_in_rf).bToA()*fork_offset.bToA()));
+    trajectory = robotTrajectory();
+    trajectory.generateTraj(fork_goal_pose_in_robot_frame.x(),...
+        fork_goal_pose_in_robot_frame.y(),...
+        fork_goal_pose_in_robot_frame.th(),...
+        1,0.2);
+
+    %sys.plotTrajectory(trajectory);
+    obj.robot.forksDown();
+    
+    obj.executeTrajectory(trajectory)
+    
+    obj.robot.stop();
+    
+    obj.robot.forksDown();
+
+    %% Correct Rotation
+%     sail = pose(obj.findClosestSail());
+%     while abs(sail.th()) > deg2rad(2)
+%         sail_th = atan2(sail.y(),sail.x());
+%         obj.rotateRobot(1*sail_th);
+%         obj.robot.sendVelocity(0.02,0.02);
+%         pause(1);
+%         obj.robot.stop();
+%         sail = pose(obj.findClosestSail());
+%     end
+
+    sail_in_rf = obj.findClosestSail()
+    
+    pause()
+    
+    fork_offset = pose(-0.12,0,0);
     fork_goal_pose_in_robot_frame = pose(pose.matToPoseVec(...
         pose(sail_in_rf).bToA()*fork_offset.bToA()));
     trajectory = robotTrajectory();
@@ -50,26 +86,19 @@ function pickUpClosestSail(obj)
     %sys.plotTrajectory(trajectory);
 
     obj.executeTrajectory(trajectory)
-
-    %% Correct Rotation
-    sail = pose(obj.findClosestSail());
-    while abs(sail.th()) > deg2rad(2)
-        sail_th = atan2(sail.y(),sail.x());
-        obj.rotateRobot(1*sail_th);
-        obj.robot.sendVelocity(0.02,0.02);
-        pause(1);
-        obj.robot.stop();
-        sail = pose(obj.findClosestSail());
-    end
+    
+    obj.robot.stop();
 
     %% Pick up the sail
-    obj.robot.forksDown();
     pause(1);
     obj.robot.sendVelocity(0.1,0.1);
-    pause(2.5);
+    pause(0.5);
     obj.robot.stop();
     obj.robot.forksUp();
-    %obj.rotateRobot(pi);
+    pause(1);
+    obj.rotateRobot(pi);
+    obj.robot.sendVelocity(0.2,0.2);
+    pause(1);
 end
 
 function plotTrajectory(obj, trajectory)
@@ -191,11 +220,17 @@ end
 
 function sail = findClosestSail(obj)
     %FINDCLOSESTSAIL Returns closest sail as vector (x,y,th)
-    sails = obj.findSails(1);
+    sails = obj.findSails(30);
     if size(sails,2) > 0
-        sails = sails(1:3,:);
-
-        [~,idx_min] = min(mean(sails(1:2,:)));
+        idx_min = 1;
+        min_dist = 2;
+        for i = 1:size(sails,2)
+            dist = sqrt(sails(1,i)^2 + sails(2,i)^2);
+            if dist < min_dist
+                idx_min = i;
+                min_dist = dist;
+            end
+        end
 
         sail = sails(:,idx_min);
 
@@ -229,7 +264,7 @@ if close
     max_r = 0.5;
 else
     min_r = 0.08;
-    max_r = 0.8;
+    max_r = 1;
 end
 
 sails = [];

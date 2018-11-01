@@ -7,17 +7,17 @@ classdef robotModel < handle
   % routines are referenced from the class name as well.
 
   properties(Constant)
-    W = 8.5/100; % wheel tread in m
-    W2 = 8.5/2/100; %1/2 wheel tread in m
+    W = 9/100; % wheel tread in m
+    W2 = 9/2/100; %1/2 wheel tread in m
     maxWheelVelocity = 0.2; % max of either wheel in m/sec
 
     rad = .165; % robot body radius id 12.75/2 inches
     frontOffset = 6*0.0254; % front surface is 6 in in fwd of axle center
     objOffset = 1.5*0.0254; % half of object width
-    laser_l = -0.1; % laser offset
+    laser_l = -4; % laser offset
     laser_rad = 0.04; % laser housing radius
     
-    laserOffset = -3;
+    laserOffset = -5;
 
     tdelay = 0.23; % comms delay (bidirectional)
   end

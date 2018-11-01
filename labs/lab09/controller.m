@@ -6,7 +6,7 @@ methods(Static = true)
     k_x = 1/tau;
     if (V < .015)
         k_y = 0;
-        k_theta = 0;
+        k_theta = 0.05;
     else
         k_y = 2/(tau^2*abs(V));
         k_theta = 1/tau;
