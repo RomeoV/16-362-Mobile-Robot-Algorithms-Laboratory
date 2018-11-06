@@ -64,7 +64,8 @@ classdef rangeImage < handle
         while ~isempty(good_ones)
             next_idx = last_idx+good_ones(1);
             % skip individual 'good points'
-            if sum(obj.good_indices(next_idx:next_idx+2))~=3
+            indices = rangeImage.getIndices(next_idx,rangeImage.indexAdd(next_idx,2));
+            if sum(obj.good_indices(indices))~=3
                 last_idx = next_idx+3;
                 good_ones = find(obj.good_indices(last_idx+1:end));
                 continue
