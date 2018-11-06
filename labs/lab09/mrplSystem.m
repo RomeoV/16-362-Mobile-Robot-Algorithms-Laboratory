@@ -47,7 +47,7 @@ function pickUpClosestSail(obj)
     
     pause()
     
-    fork_offset = pose(-0.30,0,0);
+    fork_offset = pose(-0.20,0,0);
     fork_goal_pose_in_robot_frame = pose(pose.matToPoseVec(...
         pose(sail_in_rf).bToA()*fork_offset.bToA()));
     trajectory = robotTrajectory();
@@ -68,38 +68,10 @@ function pickUpClosestSail(obj)
     obj.redirectToClosestSail();
     
     obj.robot.forksDown();
-
-    %% Correct Rotation
-%     sail = pose(obj.findClosestSail());
-%     while abs(sail.th()) > deg2rad(2)
-%         sail_th = atan2(sail.y(),sail.x());
-%         obj.rotateRobot(1*sail_th);
-%         obj.robot.sendVelocity(0.02,0.02);
-%         pause(1);
-%         obj.robot.stop();
-%         sail = pose(obj.findClosestSail());
-%     end
-
-    sail_in_rf = obj.findClosestSail();
-    
-    pause()
-    
-    fork_offset = pose(-0.11,0,0);
-    fork_goal_pose_in_robot_frame = pose(pose.matToPoseVec(...
-        pose(sail_in_rf).bToA()*fork_offset.bToA()));
-    trajectory = robotTrajectory();
-    trajectory.generateTraj(fork_goal_pose_in_robot_frame.x(),...
-        fork_goal_pose_in_robot_frame.y(),...
-        fork_goal_pose_in_robot_frame.th(),...
-        1,0.2);
-
-    %sys.plotTrajectory(trajectory);
-
-    obj.executeTrajectory(trajectory)
     
     obj.robot.stop();
     
-    obj.redirectToClosestSail();
+    %obj.redirectToClosestSail();
 
     %% Pick up the sail
     pause(1);
@@ -245,7 +217,7 @@ function rotateRobot(obj, th)
 end
 
 function sail = findClosestSail(obj)
-    range_image = rangeImage(sys.robot.laser.LatestMessage.Ranges);
+    range_image = rangeImage(obj.robot.laser.LatestMessage.Ranges);
     [sails, walls] = range_image.findSailsAndWalls();
     assert(~isempty(sails),'No sail found!');
     [~,idx] = min(norm(sails(1:2,:),1));

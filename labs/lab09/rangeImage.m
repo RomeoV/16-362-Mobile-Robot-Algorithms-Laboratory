@@ -56,18 +56,20 @@ classdef rangeImage < handle
     end
 
     function [sails, walls] = findSailsAndWalls(obj)
+        good_indices_copy = obj.good_indices;
         sails = [];
         walls = [];
         last_idx = 0;
-        good_ones = find(obj.good_indices(last_idx+1:end));
+        good_ones = find(good_indices_copy(last_idx+1:end));
         % loop through point clouds
         while ~isempty(good_ones)
             next_idx = last_idx+good_ones(1);
             % skip individual 'good points'
             indices = rangeImage.getIndices(next_idx,rangeImage.indexAdd(next_idx,2));
             if sum(obj.good_indices(indices))~=3
+                good_indices_copy(next_idx:rangeImage.indexAdd(next_idx,3)) = false;
                 last_idx = next_idx+3;
-                good_ones = find(obj.good_indices(last_idx+1:end));
+                good_ones = find(good_indices_copy(last_idx+1:end));
                 continue
             end
             % find sail candidate for current point cloud
@@ -87,9 +89,10 @@ classdef rangeImage < handle
                 walls = [walls pose'];
             end
             last_idx = upper_idx;
+            good_indices_copy(rangeImage.getIndices(lower_idx,upper_idx)) = false;
             
             % find next point cloud
-            good_ones = find(obj.good_indices(last_idx+1:end));
+            good_ones = find(good_indices_copy(last_idx+1:end));
         end
         
     end
@@ -116,8 +119,8 @@ classdef rangeImage < handle
       figure(5)
       subplot(1,2,2)
       hold off
-      scatter(obj.x_vals,obj.y_vals,'.')
-      daspect([1 1 1]);
+      scatter(obj.x_vals,obj.y_vals,'.'); hold on;
+      quiver(0,0,1,0,0.05,'filled','-.>b','LineWidth',2);      daspect([1 1 1]);
       xlim([-1,1]);
       ylim([-1,1]);
       hold on
@@ -190,7 +193,7 @@ end
       % jumps (by 1), by adding datapoints to the left and to the right.
       % Single NaN values can be successfully skipped.
       assert(obj.good_indices(starting_idx),'Starting index not a good range value');
-
+      
       lower_idx  = rangeImage.dec(starting_idx);
       upper_idx = rangeImage.inc(starting_idx);
       if ~obj.good_indices(lower_idx); lower_idx=rangeImage.inc(lower_idx); end
