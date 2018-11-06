@@ -4,9 +4,9 @@ methods(Static = true)
   function [vl, vr] = getControlInput(pose_ref, pose_est, vl_ffd, vr_ffd, V, log_data)
     tau = 1;
     k_x = 1/tau;
-    if (V < .015)
+    if (V < .025)
         k_y = 0;
-        k_theta = 0.05;
+        k_theta = 0.0;
     else
         k_y = 2/(tau^2*abs(V));
         k_theta = 1/tau;

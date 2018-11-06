@@ -35,6 +35,12 @@ function obj = mrplSystem()
     obj.robot.startLaser();
 end
 
+function redirectToClosestSail(obj)
+    sail = pose(obj.findClosestSail());
+    sail_th = atan2(sail.y(),sail.x());
+    obj.rotateRobot(1*sail_th);
+end
+
 function pickUpClosestSail(obj)
     %% Generate Trajectory to Sail
     sail_in_rf = obj.findClosestSail()
@@ -57,6 +63,10 @@ function pickUpClosestSail(obj)
     
     obj.robot.stop();
     
+    pause()
+
+    obj.redirectToClosestSail();
+    
     obj.robot.forksDown();
 
     %% Correct Rotation
@@ -70,11 +80,11 @@ function pickUpClosestSail(obj)
 %         sail = pose(obj.findClosestSail());
 %     end
 
-    sail_in_rf = obj.findClosestSail()
+    sail_in_rf = obj.findClosestSail();
     
     pause()
     
-    fork_offset = pose(-0.12,0,0);
+    fork_offset = pose(-0.11,0,0);
     fork_goal_pose_in_robot_frame = pose(pose.matToPoseVec(...
         pose(sail_in_rf).bToA()*fork_offset.bToA()));
     trajectory = robotTrajectory();
@@ -88,6 +98,8 @@ function pickUpClosestSail(obj)
     obj.executeTrajectory(trajectory)
     
     obj.robot.stop();
+    
+    obj.redirectToClosestSail();
 
     %% Pick up the sail
     pause(1);
@@ -197,7 +209,7 @@ end
 function rotateRobot(obj, th)
     %ROTATEROBOT rotates the robot with given angle in rad
     L = abs(th)*robotModel.W2;
-    t = linspace(0,4);
+    t = linspace(0,sqrt(4*L/(pi/50)));
     omega = zeros(size(t));
     for i = 1:max(size(t))
         omega(i) = trapezoidalVelocityProfile(t(i),pi/50,L,sign(th));
@@ -208,11 +220,25 @@ function rotateRobot(obj, th)
     while(t_latest - t_init < t(end))
         if first_loop
             t_init = obj.getLatestRobotTime();
+            t_latest = t_init;
             first_loop = false;
         end
+        encoder_l = obj.robot.encoders.LatestMessage.Vector.X;
+        encoder_r = obj.robot.encoders.LatestMessage.Vector.Y;
+        last_tstamp = t_latest;
         t_latest = obj.getLatestRobotTime();
+        d_tstamp = t_latest-last_tstamp;
+
+        obj.est_robot.updateEstimation(d_tstamp,encoder_l,encoder_r);
+
         v = interp1(t,omega,t_latest-t_init,'Spline');
         obj.robot.sendVelocity(-v,v);
+
+        if obj.real_time_plotting
+          obj.plotData();
+          drawnow();
+        end
+
         pause(0.05);
     end
     obj.robot.stop();
@@ -296,67 +322,65 @@ while toc() < 5 && found_sail<maxNumOfSails
   
   %Find Sail
   for i = 1:size(r_values,1)
-        if r_values(i)>min_r
-            arc_length = r_values(i)*deg2rad(1);
-            pm_sail = floor(0.065/arc_length);
-            pm_th = rad2deg(0.065/r_values(i));
-            indices = get_ca_ij(r_values,th,th(i)-pm_th,th(i)+pm_th);
-            sail_points = r_values(indices);
-            theta = deg2rad(th(indices));
-            x = cos(theta).* sail_points;
-            y = sin(theta).*sail_points;
-            
-            center_x = mean(x);
-            center_y = mean(y);
-            
-            x = x - center_x;
-            y = y - center_y;
-            
-            %Inertia
-            
-            Ixx = x' * x;
-            Iyy = y' * y;
-            Ixy = -x' * y;
-            Inertia = [Ixx Ixy;Ixy Iyy] /(size(th,1));
-            lambda = eig(Inertia); 
-            lambda = real(sqrt(lambda)*1000.0);
-            %disp(min(lambda))
-            if ~isempty(lambda) && min(lambda)<1.3 && min(lambda)>0
-                sail_th = rad2deg(atan2(2*Ixy,Iyy-Ixx)/2);
-                %disp(center_x + " : " + center_y + " : " + sail_th + " : " + r_values(i))
-                %Check if near other points\
-                if size(sails,2)>0
-                    new_point = true;
-                    for p = 1:size(sails,2)
-                        sx = sails(1,p);
-                        sy = sails(2,p);
-                        sth = sails(3,p);
-                        n = sails(4,p);
-                        dist = sqrt((sx - center_x)^2 +(sy-center_y)^2);
-                        if dist<0.13
-                            new_point = false; 
-                            sails(1,p) = ((sx*n)+center_x)/(n+1);
-                            sails(2,p) = ((sy*n)+center_y)/(n+1);
-                            sails(3,p) = ((sth*n)+sail_th)/(n+1);
-                            sails(4,p) = n+1;
-                            found_sail = found_sail +1;
-                        end
-                        
-                    end
-                    if new_point
-                        if (sqrt((center_x)^2 +(center_y)^2)>min_r)
-                            sails = horzcat(sails,[center_x;center_y;sail_th;1]); 
-                            found_sail = found_sail +1;
-                        end
-                    end
-                else
-                    if (sqrt((center_x)^2 +(center_y)^2)>min_r)
-                        sails = horzcat(sails,[center_x;center_y;sail_th;1]); 
-                        found_sail = found_sail +1;
-                    end
-                end                
-            end % end of if regarding lambda
-         end % end of if regarding range
+    arc_length = r_values(i)*deg2rad(1);
+    pm_sail = floor(0.065/arc_length);
+    pm_th = rad2deg(0.065/r_values(i));
+    indices = get_ca_ij(r_values,th,th(i)-pm_th,th(i)+pm_th);
+    sail_points = r_values(indices);
+    theta = deg2rad(th(indices));
+    x = cos(theta).* sail_points;
+    y = sin(theta).*sail_points;
+
+    center_x = mean(x);
+    center_y = mean(y);
+
+    x = x - center_x;
+    y = y - center_y;
+
+    %Inertia
+
+    Ixx = x' * x;
+    Iyy = y' * y;
+    Ixy = -x' * y;
+    Inertia = [Ixx Ixy;Ixy Iyy] /(size(th,1));
+    lambda = eig(Inertia); 
+    lambda = real(sqrt(lambda)*1000.0);
+    %disp(min(lambda))
+    if ~isempty(lambda) && min(lambda)<1.3 && min(lambda)>0
+        sail_th = rad2deg(atan2(2*Ixy,Iyy-Ixx)/2);
+        %disp(center_x + " : " + center_y + " : " + sail_th + " : " + r_values(i))
+        %Check if near other points\
+        if size(sails,2)>0
+            new_point = true;
+            for p = 1:size(sails,2)
+                sx = sails(1,p);
+                sy = sails(2,p);
+                sth = sails(3,p);
+                n = sails(4,p);
+                dist = sqrt((sx - center_x)^2 +(sy-center_y)^2);
+                if dist<0.13
+                    new_point = false; 
+                    sails(1,p) = ((sx*n)+center_x)/(n+1);
+                    sails(2,p) = ((sy*n)+center_y)/(n+1);
+                    sails(3,p) = ((sth*n)+sail_th)/(n+1);
+                    sails(4,p) = n+1;
+                    found_sail = found_sail +1;
+                end
+
+            end
+            if new_point
+                if (sqrt((center_x)^2 +(center_y)^2)>min_r)
+                    sails = horzcat(sails,[center_x;center_y;sail_th;1]); 
+                    found_sail = found_sail +1;
+                end
+            end
+        else
+            if (sqrt((center_x)^2 +(center_y)^2)>min_r)
+                sails = horzcat(sails,[center_x;center_y;sail_th;1]); 
+                found_sail = found_sail +1;
+            end
+        end                
+    end % end of if regarding lambda
   end % end of for-loop over range values
   pause(0.05)
 end % end of while loop for finding sails
