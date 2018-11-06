@@ -244,38 +244,25 @@ function rotateRobot(obj, th)
     obj.robot.stop();
 end
 
-function sail = findClosestSail(obj)
-    %FINDCLOSESTSAIL Returns closest sail as vector (x,y,th)
-    sails = obj.findSails(30);
-    if size(sails,2) > 0
-        idx_min = 1;
-        min_dist = 2;
-        for i = 1:size(sails,2)
-            dist = sqrt(sails(1,i)^2 + sails(2,i)^2);
-            if dist < min_dist
-                idx_min = i;
-                min_dist = dist;
-            end
-        end
-
-        sail = sails(:,idx_min);
-
-        % turn so it's facing 'away'
-%         if (sail(2) < 0 && sail(3) > 0) || (sail(2) > 0 && sail(3) < 0)
-%             sail(3) = -1*sail(3);
-%         end
+function sail = findClosestSail(obj,ranges)
+    range_image = rangeImage(ranges);
+    [sails, walls] = range_image.findSailsAndWalls();
+    assert(~isempty(sails),'No sail found!');
+    [~,idx] = min(norm(sails(1:2,:),1));
+    sail = sails(:,idx);
+    
+    if obj.real_time_plotting
+        range_image.plotXvsY();
+        range_image.plotSails(sails);
+        range_image.plotWalls(walls);
         
-        if obj.real_time_plotting
-            sail_pose_in_rf = pose(sail);
-            sail_pose_in_wf = pose(pose.matToPoseVec(...
-                obj.est_robot.getPose().bToA()*sail_pose_in_rf.bToA()));
-           figure(1)
-           hold on;
-           quiver(sail_pose_in_wf.x(), sail_pose_in_wf.y(),...
-               -cos(sail_pose_in_wf.th()),-sin(sail_pose_in_wf.th()),0.05,'filled','-.xr','LineWidth',2); hold off;
-        end
-    else
-        sail = [];
+        sail_pose_in_rf = pose(sail);
+        sail_pose_in_wf = pose(pose.matToPoseVec(...
+            obj.est_robot.getPose().bToA()*sail_pose_in_rf.bToA()));
+       figure(1)
+       hold on;
+       quiver(sail_pose_in_wf.x(), sail_pose_in_wf.y(),...
+           -cos(sail_pose_in_wf.th()),-sin(sail_pose_in_wf.th()),0.05,'filled','-.xr','LineWidth',2); hold off;
     end
 end
 
