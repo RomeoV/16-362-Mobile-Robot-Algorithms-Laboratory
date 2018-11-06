@@ -244,8 +244,8 @@ function rotateRobot(obj, th)
     obj.robot.stop();
 end
 
-function sail = findClosestSail(obj,ranges)
-    range_image = rangeImage(ranges);
+function sail = findClosestSail(obj)
+    range_image = rangeImage(sys.robot.laser.LatestMessage.Ranges);
     [sails, walls] = range_image.findSailsAndWalls();
     assert(~isempty(sails),'No sail found!');
     [~,idx] = min(norm(sails(1:2,:),1));
