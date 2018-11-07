@@ -36,18 +36,46 @@ function obj = mrplSystem()
 end
 
 function redirectToClosestSail(obj)
-    sail = pose(obj.findClosestSail());
-    sail_th = atan2(sail.y(),sail.x());
-    obj.rotateRobot(1*sail_th);
+    
+    r_values = circshift(obj.robot.laser.LatestMessage.Ranges,robotModel.laserOffset);
+    %Remove bad values
+    th = linspace(1,360,360)';
+    goodones = r_values>0.08 & r_values<0.3;
+    r_values = r_values(goodones);
+    th = th(goodones);
+    goodth1 = th<45 | th>315;
+    r_values = r_values(goodth1);
+    th = th(goodth1);
+    
+    close_ones = r_values<min(r_values)+0.1;
+    r_values=r_values(close_ones);
+    th = th(close_ones);
+    
+    
+    for i = 1:size(th,1)
+        
+        if th(i) > 180
+           th(i) = th(i)-360; 
+        end
+        
+    end
+    
+    disp(min(th)+ " : " + max(th))
+    theta = (min(th)+max(th))/2
+    theta = deg2rad(theta);
+    
+    obj.rotateRobot(1*theta);
 end
 
 function pickUpClosestSail(obj)
     %% Generate Trajectory to Sail
     sail_in_rf = obj.findClosestSail()
     
+    sail_in_rf(3) = sail_in_rf(3)*0.8
+    
     pause()
     
-    fork_offset = pose(-0.20,0,0);
+    fork_offset = pose(-0.15,0,0);
     fork_goal_pose_in_robot_frame = pose(pose.matToPoseVec(...
         pose(sail_in_rf).bToA()*fork_offset.bToA()));
     trajectory = robotTrajectory();
@@ -66,6 +94,9 @@ function pickUpClosestSail(obj)
     pause()
 
     obj.redirectToClosestSail();
+    obj.robot.stop();
+    pause();
+    obj.redirectToClosestSail();
     
     obj.robot.forksDown();
     
@@ -75,8 +106,7 @@ function pickUpClosestSail(obj)
 
     %% Pick up the sail
     pause(1);
-    obj.robot.sendVelocity(0.1,0.1);
-    pause(0.5);
+    obj.moveForwards(0.2);
     obj.robot.stop();
     obj.robot.forksUp();
     pause(1);
@@ -183,6 +213,10 @@ function rotateRobot(obj, th)
     L = abs(th)*robotModel.W2;
     t = linspace(0,sqrt(4*L/(pi/50)));
     omega = zeros(size(t));
+    rot_pose_i = obj.est_robot.getPose()
+    
+    th_ref = 0;
+    
     for i = 1:max(size(t))
         omega(i) = trapezoidalVelocityProfile(t(i),pi/50,L,sign(th));
     end
@@ -202,9 +236,21 @@ function rotateRobot(obj, th)
         d_tstamp = t_latest-last_tstamp;
 
         obj.est_robot.updateEstimation(d_tstamp,encoder_l,encoder_r);
-
+        
         v = interp1(t,omega,t_latest-t_init,'Spline');
-        obj.robot.sendVelocity(-v,v);
+        
+        th_ref = th_ref+v*d_tstamp/robotModel.W2;
+        rot_pose = obj.est_robot.getPose();
+        
+        error_th = (rot_pose_i.th+th_ref) - rot_pose.th;
+        %disp(th_ref)
+        Kp = 0.2;
+        
+        vel =(v+Kp*error_th);
+        if abs(vel)<0.005
+            vel = 0.005*sign(vel);
+        end
+        obj.robot.sendVelocity(-vel,vel);
 
         if obj.real_time_plotting
           obj.plotData();

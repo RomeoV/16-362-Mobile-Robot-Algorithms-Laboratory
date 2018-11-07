@@ -27,7 +27,7 @@ classdef rangeImage < handle
 
   properties (Constant)
     maxUsefulRange = 1.0;
-    minUsefulRange = 0.07;
+    minUsefulRange = 0.05;
     maxRangeForTarget = 1.0;
   end
 
@@ -189,7 +189,7 @@ end
 
     function [pose, lower_idx, upper_idx] = findSailCandidate(obj,starting_idx)
       % Find the longest sequence of pixels starting at pixel
-      % “starting_idx” until the minimum eigenvalue of the intertia
+      % “starting_idx�? until the minimum eigenvalue of the intertia
       % jumps (by 1), by adding datapoints to the left and to the right.
       % Single NaN values can be successfully skipped.
       assert(obj.good_indices(starting_idx),'Starting index not a good range value');
@@ -259,7 +259,7 @@ end
 
     function out = indexAdd(a,b)
       % add with wraparound over natural numbers. First number 
-      % “a” is "natural" meaning it >=1. Second number is signed.
+      % “a�? is "natural" meaning it >=1. Second number is signed.
       % Convert a to 0:3 and add b (which is already 0:3).
       % Convert the result back by adding 1.
       out = mod((a-1)+b,360)+1;
