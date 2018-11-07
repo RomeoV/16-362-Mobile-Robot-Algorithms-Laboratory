@@ -216,6 +216,43 @@ function rotateRobot(obj, th)
     obj.robot.stop();
 end
 
+function moveForwards(obj, L)
+    %ROTATEROBOT rotates the robot with given angle in rad
+    t = linspace(0,sqrt(4*abs(L)/(pi/50)));
+    speed = zeros(size(t));
+    for i = 1:max(size(t))
+        speed(i) = trapezoidalVelocityProfile(t(i),pi/50,L,sign(L));
+    end
+    t_init = obj.getLatestRobotTime();
+    t_latest = t_init;
+    first_loop = true;
+    while(t_latest - t_init < t(end))
+        if first_loop
+            t_init = obj.getLatestRobotTime();
+            t_latest = t_init;
+            first_loop = false;
+        end
+        encoder_l = obj.robot.encoders.LatestMessage.Vector.X;
+        encoder_r = obj.robot.encoders.LatestMessage.Vector.Y;
+        last_tstamp = t_latest;
+        t_latest = obj.getLatestRobotTime();
+        d_tstamp = t_latest-last_tstamp;
+
+        obj.est_robot.updateEstimation(d_tstamp,encoder_l,encoder_r);
+
+        v = interp1(t,speed,t_latest-t_init,'Spline');
+        obj.robot.sendVelocity(v,v);
+
+        if obj.real_time_plotting
+          obj.plotData();
+          drawnow();
+        end
+
+        pause(0.05);
+    end
+    obj.robot.stop();
+end
+
 function sail = findClosestSail(obj)
     range_image = rangeImage(obj.robot.laser.LatestMessage.Ranges);
     [sails, walls] = range_image.findSailsAndWalls();
@@ -237,116 +274,6 @@ function sail = findClosestSail(obj)
            -cos(sail_pose_in_wf.th()),-sin(sail_pose_in_wf.th()),0.05,'filled','-.xr','LineWidth',2); hold off;
     end
 end
-
-function sails = findSails(obj, maxNumOfSails)
-  %FINDSAILS tries to find sails for 5 seconds or until maxNumOfSails
-  %reached. Also has different cutofff distances (see code).
-  % Theta in rad
-  obj.robot.startLaser();
-  close = false;
-if close
-    min_r = 0.02;
-    max_r = 0.5;
-else
-    min_r = 0.08;
-    max_r = 1;
-end
-
-sails = [];
-
-tic()
-firstIter = true;
-found_sail = 0;
-
-while toc() < 5 && found_sail<maxNumOfSails
-  if firstIter
-      tic();
-      firstIter = false;
-  end
-  %plot points around it
-  
-  %Get r_values
-  r_values = circshift(obj.robot.laser.LatestMessage.Ranges,robotModel.laserOffset);
-  %Remove bad values
-  th = linspace(1,360,360)';
-  if close
-     close_pallet = th<45 | th > 315;
-     th = th(close_pallet);
-     r_values = r_values(close_pallet);
-  end
-  goodones = r_values>min_r & r_values<max_r;
-  r_values = r_values(goodones);
-  th = th(goodones);
-  
-  
-  %Find Sail
-  for i = 1:size(r_values,1)
-    arc_length = r_values(i)*deg2rad(1);
-    pm_sail = floor(0.065/arc_length);
-    pm_th = rad2deg(0.065/r_values(i));
-    indices = get_ca_ij(r_values,th,th(i)-pm_th,th(i)+pm_th);
-    sail_points = r_values(indices);
-    theta = deg2rad(th(indices));
-    x = cos(theta).* sail_points;
-    y = sin(theta).*sail_points;
-
-    center_x = mean(x);
-    center_y = mean(y);
-
-    x = x - center_x;
-    y = y - center_y;
-
-    %Inertia
-
-    Ixx = x' * x;
-    Iyy = y' * y;
-    Ixy = -x' * y;
-    Inertia = [Ixx Ixy;Ixy Iyy] /(size(th,1));
-    lambda = eig(Inertia); 
-    lambda = real(sqrt(lambda)*1000.0);
-    %disp(min(lambda))
-    if ~isempty(lambda) && min(lambda)<1.3 && min(lambda)>0
-        sail_th = rad2deg(atan2(2*Ixy,Iyy-Ixx)/2);
-        %disp(center_x + " : " + center_y + " : " + sail_th + " : " + r_values(i))
-        %Check if near other points\
-        if size(sails,2)>0
-            new_point = true;
-            for p = 1:size(sails,2)
-                sx = sails(1,p);
-                sy = sails(2,p);
-                sth = sails(3,p);
-                n = sails(4,p);
-                dist = sqrt((sx - center_x)^2 +(sy-center_y)^2);
-                if dist<0.13
-                    new_point = false; 
-                    sails(1,p) = ((sx*n)+center_x)/(n+1);
-                    sails(2,p) = ((sy*n)+center_y)/(n+1);
-                    sails(3,p) = ((sth*n)+sail_th)/(n+1);
-                    sails(4,p) = n+1;
-                    found_sail = found_sail +1;
-                end
-
-            end
-            if new_point
-                if (sqrt((center_x)^2 +(center_y)^2)>min_r)
-                    sails = horzcat(sails,[center_x;center_y;sail_th;1]); 
-                    found_sail = found_sail +1;
-                end
-            end
-        else
-            if (sqrt((center_x)^2 +(center_y)^2)>min_r)
-                sails = horzcat(sails,[center_x;center_y;sail_th;1]); 
-                found_sail = found_sail +1;
-            end
-        end                
-    end % end of if regarding lambda
-  end % end of for-loop over range values
-  pause(0.05)
-end % end of while loop for finding sails
-if size(sails,2) > 0
-    sails(3,:) = deg2rad(sails(3,:));
-end
-end % end function findSails
 
 function setupPlots(obj)
     %SETUPPLOTS Subplot setup for trajectory+sails, error_theta, error_x_y_th
