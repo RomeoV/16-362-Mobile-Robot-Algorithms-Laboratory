@@ -36,46 +36,20 @@ function obj = mrplSystem()
 end
 
 function redirectToClosestSail(obj)
-    
-    r_values = circshift(obj.robot.laser.LatestMessage.Ranges,robotModel.laserOffset);
-    %Remove bad values
-    th = linspace(1,360,360)';
-    goodones = r_values>0.08 & r_values<0.3;
-    r_values = r_values(goodones);
-    th = th(goodones);
-    goodth1 = th<45 | th>315;
-    r_values = r_values(goodth1);
-    th = th(goodth1);
-    
-    close_ones = r_values<min(r_values)+0.1;
-    r_values=r_values(close_ones);
-    th = th(close_ones);
-    
-    
-    for i = 1:size(th,1)
-        
-        if th(i) > 180
-           th(i) = th(i)-360; 
-        end
-        
-    end
-    
-    disp(min(th)+ " : " + max(th))
-    theta = (min(th)+max(th))/2
-    theta = deg2rad(theta);
-    
-    obj.rotateRobot(1*theta);
+    sail = obj.findClosestSail();
+    theta = atan2(sail(2),sail(1));
+    obj.rotateRobot(theta);
 end
 
 function pickUpClosestSail(obj)
     %% Generate Trajectory to Sail
     sail_in_rf = obj.findClosestSail()
     
-    sail_in_rf(3) = sail_in_rf(3)*0.8
+    sail_in_rf(3) = sail_in_rf(3)*0.8;
     
     pause()
     
-    fork_offset = pose(-0.15,0,0);
+    fork_offset = pose(-0.18,0,0);
     fork_goal_pose_in_robot_frame = pose(pose.matToPoseVec(...
         pose(sail_in_rf).bToA()*fork_offset.bToA()));
     trajectory = robotTrajectory();
@@ -91,12 +65,11 @@ function pickUpClosestSail(obj)
     
     obj.robot.stop();
     
-    pause()
+    %pause()
 
     obj.redirectToClosestSail();
     obj.robot.stop();
-    pause();
-    obj.redirectToClosestSail();
+    %obj.redirectToClosestSail();
     
     obj.robot.forksDown();
     
@@ -111,7 +84,7 @@ function pickUpClosestSail(obj)
     obj.robot.forksUp();
     pause(1);
     obj.rotateRobot(pi);
-    obj.robot.sendVelocity(0.2,0.2);
+    obj.moveForwards(.3);
     pause(1);
 end
 
