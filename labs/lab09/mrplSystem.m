@@ -38,7 +38,43 @@ end
 function redirectToClosestSail(obj)
     sail = obj.findClosestSail();
     theta = atan2(sail(2),sail(1));
-    obj.rotateRobot(theta);
+    disp(rad2deg(theta))
+    if abs(rad2deg(theta))>2
+        obj.rotateRobot(theta);
+    end
+end
+
+function redirectToClosestSail2(obj)
+    
+    r_values = circshift(obj.robot.laser.LatestMessage.Ranges,-9);
+    %Remove bad values
+    th = linspace(1,360,360)';
+    goodones = r_values>0.08 & r_values<0.3;
+    r_values = r_values(goodones);
+    th = th(goodones);
+    goodth1 = th<45 | th>315;
+    r_values = r_values(goodth1);
+    th = th(goodth1);
+    
+    close_ones = r_values<min(r_values)+0.1;
+    r_values=r_values(close_ones);
+    th = th(close_ones);
+    
+    
+    for i = 1:size(th,1)
+        
+        if th(i) > 180
+           th(i) = th(i)-360; 
+        end
+        
+    end
+    
+    disp(min(th)+ " : " + max(th))
+    theta = (min(th)+max(th))/2
+    theta = deg2rad(theta);
+    
+    obj.rotateRobotPID(1*theta);
+    
 end
 
 function pickUpClosestSail(obj)
@@ -47,7 +83,7 @@ function pickUpClosestSail(obj)
     
     sail_in_rf(3) = sail_in_rf(3)*0.8;
     
-    pause()
+    %pause()
     
     fork_offset = pose(-0.18,0,0);
     fork_goal_pose_in_robot_frame = pose(pose.matToPoseVec(...
@@ -67,9 +103,11 @@ function pickUpClosestSail(obj)
     
     %pause()
 
-    obj.redirectToClosestSail();
+    obj.redirectToClosestSail2();
     obj.robot.stop();
-    %obj.redirectToClosestSail();
+    obj.moveForwards(0.03);
+    obj.robot.stop();
+    obj.redirectToClosestSail2();
     
     obj.robot.forksDown();
     
@@ -84,8 +122,11 @@ function pickUpClosestSail(obj)
     obj.robot.forksUp();
     pause(1);
     obj.rotateRobot(pi);
-    obj.moveForwards(.3);
+    obj.moveForwards(.4);
     pause(1);
+    obj.robot.forksDown();
+    obj.moveForwards(-.1);
+    obj.rotateRobot(pi);
 end
 
 function plotTrajectory(obj, trajectory)
@@ -181,6 +222,70 @@ function tstamp = getLatestRobotTime(obj)
     tstamp = double(obj.robot.encoders.LatestMessage.Header.Stamp.Sec)+double(obj.robot.encoders.LatestMessage.Header.Stamp.Nsec)/1e9;
 end
 
+function rotateRobotPID(obj, th)
+    %ROTATEROBOT rotates the robot with given angle in rad
+    rot_pose_i = obj.est_robot.getPose()
+    
+    th_ref = th;
+    
+    t_init = obj.getLatestRobotTime();
+    t_latest = t_init;
+    first_loop = true;
+    last_error = 0;
+    error_th = th;
+    d_error_th = 0;
+    total_error = 0;
+    while((abs(error_th) > deg2rad(0.8) || abs(d_error_th)>0.1) && t_latest-t_init < 3)
+        if first_loop
+            t_init = obj.getLatestRobotTime();
+            t_latest = t_init;
+            first_loop = false;
+        end
+        encoder_l = obj.robot.encoders.LatestMessage.Vector.X;
+        encoder_r = obj.robot.encoders.LatestMessage.Vector.Y;
+        last_tstamp = t_latest;
+        t_latest = obj.getLatestRobotTime();
+        d_tstamp = t_latest-last_tstamp;
+
+        obj.est_robot.updateEstimation(d_tstamp,encoder_l,encoder_r);
+        
+        rot_pose = obj.est_robot.getPose();
+        
+        error_th = (rot_pose_i.th+th_ref) - rot_pose.th;
+        
+        if (d_tstamp ~= 0)
+            d_error_th = (error_th-last_error)/d_tstamp;
+        else
+            d_error_th = 0;
+        end
+        
+        total_error = total_error+error_th*d_tstamp;
+        
+        last_error = error_th;
+        
+        %disp(th_ref)
+        Kp = 0.1;
+        
+        Kd = 0.005;
+        
+        Ki = 0.05;
+        
+        vel =(Kp*error_th+Kd*d_error_th + Ki*total_error);
+        if abs(vel)<0.005
+            vel = 0.005*sign(vel);
+        end
+        obj.robot.sendVelocity(-vel,vel);
+
+        if obj.real_time_plotting
+          obj.plotData();
+          drawnow();
+        end
+
+        pause(0.05);
+    end
+    obj.robot.stop();
+end
+
 function rotateRobot(obj, th)
     %ROTATEROBOT rotates the robot with given angle in rad
     L = abs(th)*robotModel.W2;
@@ -217,7 +322,7 @@ function rotateRobot(obj, th)
         
         error_th = (rot_pose_i.th+th_ref) - rot_pose.th;
         %disp(th_ref)
-        Kp = 0.2;
+        Kp = 0.0;
         
         vel =(v+Kp*error_th);
         if abs(vel)<0.005
@@ -234,6 +339,7 @@ function rotateRobot(obj, th)
     end
     obj.robot.stop();
 end
+
 
 function moveForwards(obj, L)
     %ROTATEROBOT rotates the robot with given angle in rad
@@ -276,6 +382,13 @@ function sail = findClosestSail(obj)
     range_image = rangeImage(obj.robot.laser.LatestMessage.Ranges);
     [sails, walls] = range_image.findSailsAndWalls();
     assert(~isempty(sails),'No sail found!');
+    n= 0;
+    while(~isempty(sails) && n < 10)
+        range_image = rangeImage(obj.robot.laser.LatestMessage.Ranges);
+        [sails, walls] = range_image.findSailsAndWalls();
+        n = n+1;
+    end
+    
     [~,idx] = min(norm(sails(1:2,:),1));
     sail = sails(:,idx);
     
