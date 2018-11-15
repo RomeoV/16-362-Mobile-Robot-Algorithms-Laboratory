@@ -18,7 +18,7 @@ hold on
 plot([0 0],[0 1.22],'b')
 
 gain = 0.3;
-errThresh = 0.01;
+errThresh = 0.0001;
 gradThresh = 0.0005;
 
 robotPose = pose(12*0.0254,12*0.0254,pi()/2.0);
@@ -52,7 +52,7 @@ while toc() < 60
     r_values = r_values(goodones);
     th = th(goodones);
     
-    every_10 = mod(th,10)==0;
+    every_10 = mod(th,15)==0;
     r_values = r_values(every_10);
     th = th(every_10);
     theta = deg2rad(th);
@@ -66,21 +66,21 @@ while toc() < 60
         [success, outPose] = obj.refinePose(robotPose,modelPts,1000);
         
         worldPts = robotPose.bToA()*modelPts;
-%         no_corner = (worldPts(1,:).^2 + worldPts(2,:).^2)>0.02;
-%         worldPts = worldPts(:,no_corner);
+        no_corner = (worldPts(1,:).^2 + worldPts(2,:).^2)>0.02;
+        worldPts = worldPts(:,no_corner);
         lidar.XData = worldPts(1,:);
         lidar.YData = worldPts(2,:);
         if success
             robotPose = outPose;
-        else
-            %disp("shit")
+            robox = robotPose.x*39.97;
+            roboy = robotPose.y*39.97;
+            disp(robox + " : " + roboy)
         end
-        %disp(robotPose.getPoseVec)
         robo.XData = robotPose.x;
         robo.YData = robotPose.y;
     end
     
-    pause(0.05)
+    pause(0.01)
 end
 
 robot.stop();

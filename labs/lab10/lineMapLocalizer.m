@@ -45,14 +45,14 @@ function ro2 = closestSquaredDistanceToLines(obj,pi)
     end
     close_both = ~isinf(r2Array(1,:)) & ~isinf(r2Array(2,:));
     ro2 = min(r2Array,[],1);
-    ro2 = ro2(close_both);
+    % ro2 = ro2(close_both);
 end
 
 function ids = throwOutliers(obj,pose,ptsInModelFrame)
     % Find ids of outliers in a scan.
     worldPts = pose.bToA()*ptsInModelFrame;
     r2 = obj.closestSquaredDistanceToLines(worldPts);
-    ids = find(r2 > obj.maxErr*obj.maxErr);
+    ids = find(r2 < obj.maxErr*obj.maxErr);
 end
 
 function avgErr2 = fitError(obj,pose,ptsInModelFrame)
@@ -83,17 +83,17 @@ function [err2_Plus0,J] = getJacobian(obj,poseIn,modelPts)
     dx = [eps ; 0.0 ; 0.0];
     newPose_x = pose(poseIn.getPoseVec+dx);
     error_dx = fitError(obj,newPose_x,modelPts)-err2_Plus0;
-    disp(fitError(obj,newPose_x,modelPts))
+    %disp(fitError(obj,newPose_x,modelPts))
     
     dy = [0.0 ; eps ; 0.0];
     newPose_y = pose(poseIn.getPoseVec+dy);
     error_dy = fitError(obj,newPose_y,modelPts)-err2_Plus0;
-    disp(fitError(obj,newPose_y,modelPts))
+    %disp(fitError(obj,newPose_y,modelPts))
     
     dz = [0.0 ; 0.0 ; eps];
     newPose_z = pose(poseIn.getPoseVec+dz);
     error_dz = fitError(obj,newPose_z,modelPts)-err2_Plus0;
-    disp(fitError(obj,newPose_z,modelPts))
+    %disp(fitError(obj,newPose_z,modelPts))
     
     J = [error_dx/eps; error_dy/eps; error_dz/eps];
 end
@@ -113,20 +113,24 @@ function [success, outPose] = refinePose(obj,inPose,ptsInModelFrame,maxIters)
     
     ids = throwOutliers(obj,inPose,ptsInModelFrame);
     ptsInModelFrame = ptsInModelFrame(:,ids);
+    
+    worldPts = inPose.bToA()*ptsInModelFrame;
+    no_corner = (worldPts(1,:).^2 + worldPts(2,:).^2)>0.02;
+    ptsInModelFrame = ptsInModelFrame(:,no_corner);
+    
     [error,J] = obj.getJacobian(inPose,ptsInModelFrame);
     mag_grad = norm(J);
     iter = 0;
     success = false;
-    error_data = [];
     while (error>obj.errThresh && mag_grad>obj.gradThresh && iter<maxIters)
         inPose = pose(inPose.getPoseVec - obj.gain*J);
         [error,J] = obj.getJacobian(inPose,ptsInModelFrame);
-        error_data = [error_data error];
         mag_grad = norm(J);
         iter = iter+1;
 %         hold on
 %         scatter(iter,mag_grad)
     end
+    %disp(iter + " : " + mag_grad + " : " + error)
     if(error<obj.errThresh || mag_grad<obj.gradThresh)
         success = true;
         
