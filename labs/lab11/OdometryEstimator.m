@@ -44,7 +44,7 @@ methods
       [V_est, omega_est] = robotModel.vlvrToVw(vl_est, vr_est);
       obj.x_est = obj.x_est + cos(obj.theta_est)*V_est*dt/2;
       obj.y_est = obj.y_est + sin(obj.theta_est)*V_est*dt/2;
-      obj.theta_est = obj.theta_est + omega_est*dt;
+      obj.theta_est = wrapToPi(obj.theta_est + omega_est*dt);
       obj.x_est = obj.x_est + cos(obj.theta_est)*V_est*dt/2;
       obj.y_est = obj.y_est + sin(obj.theta_est)*V_est*dt/2;
     end

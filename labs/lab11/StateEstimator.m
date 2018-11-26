@@ -38,7 +38,7 @@ methods
   end
 
   function spin(obj,robot)
-    if toc(obj.internalTimerID) < obj.updateInterval
+    if toc(obj.internalTimerID) > obj.updateInterval
       obj.internalTimerID = tic();
 
       robot_pose_est = obj.odometry_estimator.getPose();
@@ -53,14 +53,19 @@ methods
       objective = @(pose_vec) pose_estimate_error(pose_vec, lidar_data, indices_x_axis, indices_y_axis);
 
       new_robot_pose_vec = lsqnonlin(objective,robot_pose_est.getPoseVec(),[],[],StateEstimator.getOptimOpts());
-      obj.odometry_estimator.setPose(pose(new_robot_pose_vec));
+      
+      fusion_pose_vec = robot_pose_est.getPoseVec() + 0.25*(new_robot_pose_vec-robot_pose_est.getPoseVec());
+      fusion_pose_vec(3) = wrapToPi(fusion_pose_vec(3));      
+      obj.odometry_estimator.setPose(pose(fusion_pose_vec));
       
       if obj.real_time_plotting
         indices_plt = indices_x_axis | indices_y_axis;
+        figure(12)
         hold off; scatter(x(indices_plt),y(indices_plt),'.r');
         hold on; plot([0;0],[0;1],'g')
         plot([0;1],[0;0],'g'); hold off;
         drawnow();
+        figure(11)
       end
     end
   end

@@ -8,9 +8,9 @@ x_data = [];
 y_data = [];
 enc_l = sys.robot.encoders.LatestMessage.Vector.X;
 enc_r = sys.robot.encoders.LatestMessage.Vector.Y;
-state_estimator = StateEstimator(pose(0.3,0.3,0),[enc_l;enc_r],false);
+state_estimator = StateEstimator(pose(0.3,0.3,0),[enc_l;enc_r],true);
 
-figure(1)
+figure(11)
 drive = robotKeypressDriver(gcf);
 
 run_timer_id = tic();
@@ -24,6 +24,7 @@ while toc(run_timer_id) < 120
       [enc_l, enc_r]);
     pose_est = state_estimator.getPose();
 
+    figure(11)
     x_data = [x_data pose_est.x()];
     y_data = [y_data pose_est.y()];
     scatter(x_data,y_data,'.r'); hold on;
