@@ -3,6 +3,7 @@ classdef mrplSystem
 %   List of functions:
 %   - pickUpClosestSail
 %   - executeTrajectory
+%   - goSomewhereInWF
 %   - tstamp 
 %   - rotateRobot
 %   - findClosestSail
@@ -29,9 +30,10 @@ function obj = mrplSystem()
     if obj.real_time_plotting
         obj.setupPlots();
     end
-    obj.est_robot = OdometryEstimator(...
-             obj.robot.encoders.LatestMessage.Vector.X,...
-             obj.robot.encoders.LatestMessage.Vector.Y);
+    obj.est_robot = StateEstimator(pose(0.3,0.3,0),...
+            [obj.robot.encoders.LatestMessage.Vector.X,...
+             obj.robot.encoders.LatestMessage.Vector.Y],...
+         false);
     obj.ref_robot = refRobot(robotTrajectory());
     obj.robot.startLaser();
 end
@@ -112,6 +114,17 @@ function pickUpClosestSail(obj)
     pause(1);
 end
 
+function goSomewhereInWF(obj, goal_pose_in_wf)
+    goal_pose_in_rf = pose(pose.matToPoseVec(obj.est_robot.getPose.aToB()*goal_pose_in_wf.bToA()));
+    trajectory = robotTrajectory();
+    trajectory.generateTraj(goal_pose_in_rf.x(),...
+        goal_pose_in_rf.y(),...
+        goal_pose_in_rf.th(),...
+        1,0.13);
+
+    obj.executeTrajectory(trajectory);
+end
+
 function plotTrajectory(obj, trajectory)
     figure(1);
     hold on;
@@ -163,7 +176,9 @@ function executeTrajectory(obj, trajectory)
       %disp("Matlab dt: " + dt + " - Robot dt: " + d_tstamp)
       %tstamp = current_time;
 
-      obj.est_robot.updateEstimation(d_tstamp,encoder_l,encoder_r);
+      obj.est_robot.spin(obj.robot);
+      obj.est_robot.updateOdometry(obj.getLatestRobotTime(),...
+          [encoder_l,encoder_r]);
 
       delayed_time = max(0,current_time-robotModel.tdelay);
       %pose_ref_in_rf = ref_robot.getReferencePoseAtTime(current_time-robotModel.tdelay);
@@ -207,7 +222,7 @@ end
 
 function rotateRobot(obj, th)
     %ROTATEROBOT rotates the robot with given angle in rad
-    rot_pose_i = obj.est_robot.getPose()
+    rot_pose_i = obj.est_robot.getPose();
     
     th_ref = th;
     
@@ -230,7 +245,8 @@ function rotateRobot(obj, th)
         t_latest = obj.getLatestRobotTime();
         d_tstamp = t_latest-last_tstamp;
 
-        obj.est_robot.updateEstimation(d_tstamp,encoder_l,encoder_r);
+        obj.est_robot.spin(obj.robot);
+        obj.est_robot.updateOdometry(obj.getLatestRobotTime(),[encoder_l,encoder_r]);
         
         rot_pose = obj.est_robot.getPose();
         
@@ -291,7 +307,8 @@ function moveForwards(obj, L)
         t_latest = obj.getLatestRobotTime();
         d_tstamp = t_latest-last_tstamp;
 
-        obj.est_robot.updateEstimation(d_tstamp,encoder_l,encoder_r);
+        obj.est_robot.spin(obj.robot);
+        obj.est_robot.updateOdometry(obj.getLatestRobotTime(),[encoder_l,encoder_r]);
 
         v = interp1(t,speed,t_latest-t_init,'Spline');
         obj.robot.sendVelocity(v,v);
