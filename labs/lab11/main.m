@@ -1,8 +1,8 @@
 clc;
 close all;
 
-sys = mrplSystem();
-sys.real_time_plotting=true;
+sys = mrplSystem(true);
+%sys.real_time_plotting=false;
 
 init_timer = tic();
 while toc(init_timer) < 5.0

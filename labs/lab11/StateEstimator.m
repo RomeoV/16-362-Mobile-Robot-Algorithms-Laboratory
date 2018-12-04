@@ -11,10 +11,10 @@ methods(Static=true)
   function opts = getOptimOpts()
     opts = optimoptions(@lsqnonlin);
     opts.Display = 'none';
-    %opts.Display = final-detailed;
+    %opts.Display = 'final-detailed';
     opts.UseParallel = false;
     opts.OptimalityTolerance = 1e-6;
-    opts.FunctionTolerance = 1e-6;
+    opts.FunctionTolerance = 1e-4;
     opts.MaxIterations = 100;
     opts.FunValCheck = 'on';
     %opts.Algorithm = 'levenberg-marquardt';
@@ -54,15 +54,15 @@ methods
       [x,y] = range_image.getXYinWorldCoords(robot_pose_est);
 
       dist = 0.25;
-      indices_x_axis = y < 0.15 & x < 1-dist & x > dist;% & mod(1:length(x),4)' == 0;
-      indices_y_axis = x < 0.15 & y < 1-dist & y > dist;% & mod(1:length(y),4)' == 0;
+      indices_x_axis = y > -0.10 & y < 0.10 & x < 1-dist & x > dist;% & mod(1:length(x),4)' == 0;
+      indices_y_axis = x > -0.10 & x < 0.10 & y < 1-dist & y > dist;% & mod(1:length(y),4)' == 0;
       %lidar_data(~(indices_x_axis | indices_y_axis)) = 0;
       %range_image = range_image.getXYInWorldCoords(robot_pose_est);
       %lidar_data = lidar_data(indices_x_axis | indices_y_axis);
       %range_image = rangeImage(lidar_data);
         
       disp("x: " + num2str(sum(indices_x_axis)) + " - y: " + num2str(sum(indices_y_axis)));
-      if sum(indices_x_axis) >= 3 && sum(indices_y_axis) >= 3
+      if sum(indices_x_axis) >= 5 && sum(indices_y_axis) >= 5
           objective = @(pose_vec) pose_estimate_error(pose_vec, lidar_data, indices_x_axis, indices_y_axis);
 
           optim_timer = tic();
@@ -72,7 +72,7 @@ methods
           delta_pose = new_robot_pose_vec-robot_pose_est.getPoseVec();
           delta_pose(3) = delta_pose(3)*0.8;
           obj.delta_data = [obj.delta_data [norm(delta_pose(1:2));delta_pose(3)]];
-          fusion_pose_vec = robot_pose_est.getPoseVec() + 0.75*delta_pose;
+          fusion_pose_vec = robot_pose_est.getPoseVec() + 0.25*delta_pose;
           fusion_pose_vec(3) = wrapToPi(fusion_pose_vec(3));      
           obj.odometry_estimator.setPose(pose(fusion_pose_vec));
       
@@ -92,6 +92,7 @@ methods
        figure(13)
        plot(obj.delta_data(1,:)); hold on
        plot(obj.delta_data(2,:)); hold off
+       title('Lidar correction (x/y, theta)')
        drawnow();
      end
 

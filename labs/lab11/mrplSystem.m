@@ -20,20 +20,20 @@ properties
 end
 
 methods
-function obj = mrplSystem()
+function obj = mrplSystem(real_time_plotting)
     %MRPLSYSTEM Construct an instance of this class
     %   Detailed explanation goes here
     obj.robot = raspbot('good boi');
     obj.data_logger = logger();
     obj.data_logger.logging = true;
-    obj.real_time_plotting = true;
+    obj.real_time_plotting = real_time_plotting;
     if obj.real_time_plotting
         obj.setupPlots();
     end
-    obj.est_robot = StateEstimator(pose(0.3,0.3,0),...
+    obj.est_robot = StateEstimator(pose(0.6096,0.6096,pi/2),...
             [obj.robot.encoders.LatestMessage.Vector.X,...
              obj.robot.encoders.LatestMessage.Vector.Y],...
-         true);
+         obj.real_time_plotting);
     obj.ref_robot = refRobot(robotTrajectory());
     obj.robot.startLaser();
 end
