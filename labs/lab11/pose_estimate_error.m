@@ -5,8 +5,8 @@ pose_est = pose(pose_est_vec);
 range_image = rangeImage(lidar_data);
 [x,y] = range_image.getXYinWorldCoords(pose_est);
 
-[error_x_axis,~]  = closestPointOnLineSegment([x(indices_x_axis),y(indices_x_axis)]',[0.1;0],[0.9;0]);
-[error_y_axis,~] = closestPointOnLineSegment([x(indices_y_axis),y(indices_y_axis)]',[0;0.1],[0;0.9]);
+[error_x_axis,~]  = closestPointOnLineSegment([x(indices_x_axis),y(indices_x_axis)]',[0.;0],[1.25;0]);
+[error_y_axis,~] = closestPointOnLineSegment([x(indices_y_axis),y(indices_y_axis)]',[0;0],[0;1.25]);
 error = [error_x_axis';error_y_axis'];
 end
 

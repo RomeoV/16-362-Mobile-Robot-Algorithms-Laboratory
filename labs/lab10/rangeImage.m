@@ -130,8 +130,10 @@ classdef rangeImage < handle
       figure(5)
       subplot(1,2,2)
       hold on
+      if max(size(sails))> 0
       quiver(sails(1,:), sails(2,:),...
         -cos(sails(3,:)),-sin(sails(3,:)),0.05,'filled','-.xr','LineWidth',2);      daspect([1 1 1]);
+      end
     end
     
     function plotWalls(obj,walls)
@@ -140,6 +142,17 @@ classdef rangeImage < handle
       hold on
       quiver(walls(1,:), walls(2,:),...
         -cos(walls(3,:)),-sin(walls(3,:)),0.05,'filled','-.xg','LineWidth',2);      daspect([1 1 1]);
+    end
+    
+    function [x,y] = getXYinWorldCoords(obj,robotPose)
+        x = robotPose.x()*ones(360,1);
+        y = robotPose.y()*ones(360,1);
+        for i = find(obj.good_indices)'
+            pose_in_world_coords = pose(pose.matToPoseVec(...
+                robotPose.bToA()*pose(obj.x_vals(i),obj.y_vals(i),0).bToA()));
+            x(i) = pose_in_world_coords.x();
+            y(i) = pose_in_world_coords.y();
+        end
     end
 
 end
@@ -189,7 +202,7 @@ end
 
     function [pose, lower_idx, upper_idx] = findSailCandidate(obj,starting_idx)
       % Find the longest sequence of pixels starting at pixel
-      % “starting_idx�? until the minimum eigenvalue of the intertia
+      % “starting_idx�? until the minimum eigenvalue of the intertia
       % jumps (by 1), by adding datapoints to the left and to the right.
       % Single NaN values can be successfully skipped.
       assert(obj.good_indices(starting_idx),'Starting index not a good range value');
@@ -259,7 +272,7 @@ end
 
     function out = indexAdd(a,b)
       % add with wraparound over natural numbers. First number 
-      % “a�? is "natural" meaning it >=1. Second number is signed.
+      % “a�? is "natural" meaning it >=1. Second number is signed.
       % Convert a to 0:3 and add b (which is already 0:3).
       % Convert the result back by adding 1.
       out = mod((a-1)+b,360)+1;

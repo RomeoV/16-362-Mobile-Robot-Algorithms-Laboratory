@@ -18,10 +18,11 @@ while toc(run_timer_id) < 120
     drive.drive(sys.robot,1);
     enc_l = sys.robot.encoders.LatestMessage.Vector.X;
     enc_r = sys.robot.encoders.LatestMessage.Vector.Y;
-    state_estimator.spin(sys.robot);
     state_estimator.updateOdometry(...
       sys.getLatestRobotTime(),...
       [enc_l, enc_r]);
+
+    state_estimator.spin(sys.robot);
     pose_est = state_estimator.getPose();
 
     figure(11)

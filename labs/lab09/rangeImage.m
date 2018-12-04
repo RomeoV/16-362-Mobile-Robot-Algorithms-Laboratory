@@ -83,9 +83,9 @@ classdef rangeImage < handle
             
             % Determine if sail or wall based on width
             sail_width = obj.getSailWidth(lower_idx,upper_idx)/cos(pose(3)-sail_angle);
-            if sail_width > 0.07 && sail_width < 0.13
+            if sail_width > 0.12 && sail_width < 0.16
                 sails = [sails pose'];
-            elseif sail_width > 0.13
+            elseif sail_width > 0.16
                 walls = [walls pose'];
             end
             last_idx = upper_idx;

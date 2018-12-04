@@ -26,9 +26,9 @@ classdef rangeImage < handle
 
 
   properties (Constant)
-    maxUsefulRange = 1.0;
+    maxUsefulRange = 1.8;
     minUsefulRange = 0.06;
-    maxRangeForTarget = 1.0;
+    maxRangeForTarget = 1.8;
   end
 
   properties (Access = public)
