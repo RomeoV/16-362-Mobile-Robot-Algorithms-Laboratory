@@ -354,8 +354,8 @@ function setupPlots(obj)
     xlabel('x');
     ylabel('y');
     daspect([1 1 1]);
-    xlim([-1,1]);
-    ylim([-1,1]);
+    xlim([-0.3,1.5]);
+    ylim([-0.3,1.5]);
     
     figure(2)
     subplot(1,2,1);

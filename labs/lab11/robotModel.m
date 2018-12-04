@@ -18,7 +18,7 @@ classdef robotModel < handle
     laser_l = -4; % laser offset
     laser_rad = 0.04; % laser housing radius
     
-    laserOffset = -4;
+    laserOffset = -5;
 
     tdelay = 0.23; % comms delay (bidirectional)
     
